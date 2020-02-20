@@ -77,21 +77,30 @@ def get_cursor(filename):
 def clean_up(cursor):
     # STEP 2: "DELETE FROM Documents WHERE path LIKE '.%' ;
     # Remove all hidden file histories
-    cursor.execute('DELETE FROM Documents WHERE path LIKE \'.%\' ;')
+    cursor.execute("DELETE FROM Documents WHERE path LIKE \'.%\'")
     # STEP 3: "DROP TABLE ChatMessages"
     cursor.execute('DROP TABLE IF EXISTS ChatMessages')
     # STEP 4: "DROP TABLE Environments"
     cursor.execute('DROP TABLE IF EXISTS Environments')
-    # STEP 4: "DROP TABLE Environments"
-    cursor.execute('DROP TABLE IF EXISTS Environments')
     return cursor
 
-def save_count(cursor):
-    cursor.execute('DROP TABLE IF EXISTS ChatMessages')
+
+def get_document(cursor, file_name):
+    cursor.execute("SELECT * FROM Documents WHERE path LIKE '%" + file_name + "%'")
+    return cursor
+
+
+def save_count(cursor, file_name):
+    cursor = get_document(cursor, file_name)
+    student_file = cursor.fetchone()
+    return len(db_string_to_array(student_file)) - 1
+
 
 def main():
-    the_cursor = get_cursor("92316106dd4e4f4baf314dd59dc4354f.db")
+    the_cursor = get_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
     cursor = clean_up(the_cursor)
-    save_count(cursor)
+    num_saves = save_count(cursor, "/bash")
+    print(num_saves)
+
 
 main()

@@ -64,7 +64,7 @@ def create_folders(cursor):
 
 
 def db_string_to_array(the_string):
-    return str(the_string).strip('[]').strip("'").replace('\"', '').split(',')
+    return str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
 
 
 def get_cursor(filename):
@@ -85,22 +85,92 @@ def clean_up(cursor):
     return cursor
 
 
-def get_document(cursor, file_name):
-    cursor.execute("SELECT * FROM Documents WHERE path LIKE '%" + file_name + "%'")
+def get_like_db(cursor, db_name, column, like_string):
+    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column +
+                   " LIKE '%" + like_string + "%'")
     return cursor
 
 
-def save_count(cursor, file_name):
-    cursor = get_document(cursor, file_name)
+document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
+                 "auth_attributes": 4, "saves": 5, "revision_number": 6, "created_at": 7,
+                 "updated_at": 8, "last_update": 9, "new_line_char": 10}
+
+
+def last_save(dirty_input):
+    return len(db_string_to_array(dirty_input))
+
+
+def document_info(cursor, file_name, lookup_item):
+    cursor = get_like_db(cursor, "Documents", "path", file_name)
     student_file = cursor.fetchone()
-    return len(db_string_to_array(student_file)) - 1
+    index = document_dict[lookup_item]
+    fetch = student_file[index]
+    if index == 5:
+        fetch = last_save(fetch)
+
+    return fetch
+
+
+def deletions_insertions(cursor, file_name):
+    document_id = document_info(cursor, file_name, "id")
+    deletions = 0
+    insertions = 0
+
+    cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
+    operation_array = cursor.fetchall()
+
+    for operation in operation_array:
+        operation_string = str(operation[0])
+        # print(operation_string)
+        deletions += operation_string.count(',"d')
+        insertions += operation_string.count(',"i')
+    return deletions, insertions
+
+
+def gather(cursor, file_name):
+    document_id = document_info(cursor, file_name, "id")
+
+    general_pulse = {}
+
+    cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
+    operation_array = cursor.fetchall()
+
+    for operation in operation_array:
+        operation_str_arr = str(operation[0]).strip("b'").strip('[]').replace('\"', '').split(',')
+        for element in operation_str_arr:
+            if element[:1] == 'i':
+                general_pulse[operation[1]] = element[1:]
+
+    # return time: inserted text dictionary
+    return general_pulse
+
+
+def all_pulses(general_pulse):
+    # comments, function, logic
+    data_pulse = []
+
+    for element in general_pulse:
+        element_array = [element, general_pulse[element], general_pulse[element].count("//") +
+                         general_pulse[element].count("/*")]
+        data_pulse.append(element_array)
+
+    return data_pulse
 
 
 def main():
     the_cursor = get_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
+    the_file = "stack.h"
     cursor = clean_up(the_cursor)
-    num_saves = save_count(cursor, "/bash")
-    print(num_saves)
+    doc_file = document_info(cursor, the_file, "saves")
+
+    deletions, insertions = deletions_insertions(cursor, the_file)
+    print(str(deletions) + " " + str(insertions))
+
+    general_pulse = gather(cursor, the_file)
+    #print(general_pulse)
+    data_pulse = all_pulses(general_pulse)
+
+    print(data_pulse)
 
 
 main()

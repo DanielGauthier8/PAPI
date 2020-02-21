@@ -67,7 +67,7 @@ def db_string_to_array(the_string):
     return str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
 
 
-def get_cursor(filename):
+def set_cursor(filename):
     # STEP 1: Open file
     conn = sqlite3.connect(filename)
     cursor = conn.cursor()
@@ -90,28 +90,28 @@ def get_like_db(cursor, db_name, column, like_string):
                    " LIKE '%" + like_string + "%'")
     return cursor
 
-
+# Save points added, to return the array of save points
 document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
-                 "auth_attributes": 4, "saves": 5, "revision_number": 6, "created_at": 7,
-                 "updated_at": 8, "last_update": 9, "new_line_char": 10}
-
-
-def last_save(dirty_input):
-    return len(db_string_to_array(dirty_input))
+                 "auth_attributes": 4, "save_points": 5, "revision_number": 6, "created_at": 7,
+                 "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
 
 
 def document_info(cursor, file_name, lookup_item):
+    # Gets specific document columns
     cursor = get_like_db(cursor, "Documents", "path", file_name)
     student_file = cursor.fetchone()
     index = document_dict[lookup_item]
-    fetch = student_file[index]
-    if index == 5:
-        fetch = last_save(fetch)
+    fetch = student_file[index % 10]
+    if index % 10 == 5:
+        fetch = db_string_to_array(fetch)
+    if index == 15:
+        fetch = len(fetch)
 
     return fetch
 
 
-def deletions_insertions(cursor, file_name):
+def deletions_insertions(cursor, file_name) -> (int, int):
+    # Counts the number of deletions and insertions
     document_id = document_info(cursor, file_name, "id")
     deletions = 0
     insertions = 0
@@ -128,6 +128,7 @@ def deletions_insertions(cursor, file_name):
 
 
 def gather(cursor, file_name):
+    # Convert SQLite database to timestamp:operation dictionary
     document_id = document_info(cursor, file_name, "id")
 
     general_pulse = {}
@@ -146,6 +147,7 @@ def gather(cursor, file_name):
 
 
 def all_pulses(general_pulse):
+    # Finds programming events in the timestamp:operation dictionary
     # comments, function, logic
     data_pulse = []
 
@@ -157,9 +159,9 @@ def all_pulses(general_pulse):
     return data_pulse
 
 
-def main():
-    the_cursor = get_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
-    the_file = "stack.h"
+def test():
+    the_cursor = set_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
+    the_file = "bst"
     cursor = clean_up(the_cursor)
     doc_file = document_info(cursor, the_file, "saves")
 
@@ -167,10 +169,12 @@ def main():
     print(str(deletions) + " " + str(insertions))
 
     general_pulse = gather(cursor, the_file)
-    #print(general_pulse)
+    # print(general_pulse)
     data_pulse = all_pulses(general_pulse)
 
-    print(data_pulse)
+    # print(data_pulse)
+
+    return 0
 
 
-main()
+# test()

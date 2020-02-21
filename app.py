@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import sqlite3
@@ -10,7 +12,7 @@ ALLOWED_EXTENSIONS = {'db'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './databases'
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 300 * 1024 * 1024
 app.config['SECRET_KEY'] = 'zdfxfghjkbhvgc'
 
 CURSOR = None
@@ -28,6 +30,11 @@ def allowed_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/loading/<filename>')
+def loading(filename):
+    return render_template('loading.html')
 
 
 @app.route('/upload_file', methods=['GET', 'POST'])
@@ -51,12 +58,13 @@ def upload_file():
 
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             session['file_name'] = UPLOAD_FOLDER + "/" + filename
-            return redirect(url_for('uploaded_file', filename=filename))
+            return redirect(url_for('loading', filename=filename))
     return render_template('upload_file.html')
 
 
-@app.route('/databases/<filename>')
-def uploaded_file(filename):
+@app.route('/results')
+def results():
+    time.sleep(2)
     the_cursor = set_cursor(session['file_name'])
     the_cursor = clean_up(the_cursor)
     return render_template('student_info.html')

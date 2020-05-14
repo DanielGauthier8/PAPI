@@ -146,6 +146,25 @@ def gather(cursor, file_name):
     return general_pulse
 
 
+def gather_many(cursor, files):
+    many_file_pulses = {}
+    for file_name in files:
+        # Convert SQLite database to timestamp:operation dictionary
+        document_id = document_info(cursor, file_name, "id")
+
+        cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
+        operation_array = cursor.fetchall()
+
+        for operation in operation_array:
+            operation_str_arr = str(operation[0]).strip("b'").strip('[]').replace('\"', '').split(',')
+            for element in operation_str_arr:
+                if element[:1] == 'i':
+                    many_file_pulses[operation[1]] = element[1:]
+
+    # return time: inserted text dictionary
+    return many_file_pulses
+
+
 def all_pulses(general_pulse):
     # Finds programming events in the timestamp:operation dictionary
     # comments, function, logic
@@ -159,19 +178,38 @@ def all_pulses(general_pulse):
     return data_pulse
 
 
+def all_files(cursor):
+    all_the_files = []
+    # Create folder for user
+    cursor.execute('SELECT * FROM Users LIMIT 1')
+    user_info = cursor.fetchone()
+    # print(user_info[0])
+
+    cursor.execute("SELECT * FROM Documents")
+    student_file = cursor.fetchone()
+    # First create all the files
+    while student_file is not None:
+        all_the_files.append(student_file[1])
+        student_file = cursor.fetchone()
+    return all_the_files
+
+
 def test():
     the_cursor = set_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
-    the_file = "bst"
     cursor = clean_up(the_cursor)
-    doc_file = document_info(cursor, the_file, "saves")
+    files_list = all_files(the_cursor)
+    print(files_list)
 
-    deletions, insertions = deletions_insertions(cursor, the_file)
+    doc_file = document_info(cursor, files_list, "saves")
+
+    deletions, insertions = deletions_insertions(cursor, files_list)
     print(str(deletions) + " " + str(insertions))
 
-    general_pulse = gather(cursor, the_file)
-    # print(general_pulse)
-    data_pulse = all_pulses(general_pulse)
 
+    # general_pulse = gather(cursor, the_file)
+    # print(general_pulse)
+    # data_pulse = all_pulses(general_pulse)
+    #
     # print(data_pulse)
 
     return 0

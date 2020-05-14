@@ -3,7 +3,7 @@ import time
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import sqlite3
-from db_actions import set_cursor, clean_up, all_files
+from db_actions import set_cursor, clean_up, all_files, all_data
 import os
 from tempfile import NamedTemporaryFile
 
@@ -14,12 +14,6 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './databases'
 app.config['MAX_CONTENT_LENGTH'] = 300 * 1024 * 1024
 app.config['SECRET_KEY'] = 'zdfxfghjkbhgfdhvgc'
-
-CURSOR = None
-
-
-def get_cursor():
-    return CURSOR
 
 
 def allowed_file(filename):
@@ -65,18 +59,22 @@ def upload_file():
 @app.route('/student_files', methods=['GET', 'POST'])
 def results():
     time.sleep(2)
-    CURSOR = set_cursor(session['file_name'])
-    CURSOR = clean_up(CURSOR)
-    files_list = all_files(CURSOR)
-    if "file_name" not in session:
+    cursor = set_cursor(session['file_name'])
+    cursor = clean_up(cursor)
+    files_list = all_files(cursor)
+    if "chosen_files" not in session:
         session['chosen_files'] = None
     if request.method == 'POST':
-        #print(request.form.getlist('chosen_files'))
+        # print(request.form.getlist('chosen_files'))
         session['chosen_files'] = request.form.getlist('chosen_files')
-        return "uploading..."
+        return redirect(url_for('file_analysis'))
     return render_template('student_info.html', files_list=files_list)
 
-@app.route('/file_analysis', methods=['GET', 'POST'])
+
+@app.route('/file_analysis')
 def file_analysis():
+    file_dat = all_data(session['file_name'], session['chosen_files'])
 
-    return render_template('student_info.html', files_list=files_list)
+    print(file_dat)
+
+    return render_template('file_analysis.html', file_dat=file_dat)

@@ -33,7 +33,7 @@ def create_folders(cursor):
             # Create file with correct name
             file = open(user_info[0] + '/' + str(student_file[0]) + '/' + saved_star_rev[version] + tail, "w+")
             # If there is only one version or its the last version
-            if version is '' or version is (len(saved_star_rev)-1) or version is (len(saved_star_rev)-2):
+            if version is '' or version is (len(saved_star_rev) - 1) or version is (len(saved_star_rev) - 2):
                 file.write(student_file[2])
             file.close()
         student_file = cursor.fetchone()
@@ -86,9 +86,9 @@ def clean_up(cursor):
 
 
 def get_like_db(cursor, db_name, column, like_string):
-    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column +
-                   " LIKE '%" + like_string + "%'")
+    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE '%" + like_string + "%'")
     return cursor
+
 
 # Save points added, to return the array of save points
 document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
@@ -96,34 +96,57 @@ document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
                  "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
 
 
-def document_info(cursor, file_name, lookup_item):
-    # Gets specific document columns
-    cursor = get_like_db(cursor, "Documents", "path", file_name)
-    student_file = cursor.fetchone()
-    index = document_dict[lookup_item]
-    fetch = student_file[index % 10]
-    if index % 10 == 5:
-        fetch = db_string_to_array(fetch)
-    if index == 15:
-        fetch = len(fetch)
+# namez, can be singular or plural
+def documents_info(cursor, file_namez, lookup_item):
+    fetch = []
+    i = 0
+    for file_name in file_namez:
+        # Gets specific document columns
+        cursor = get_like_db(cursor, "Documents", "path", file_name)
+        student_file = cursor.fetchone()
+        index = document_dict[lookup_item]
+        fetch.append(student_file[index % 10])
+        if index % 10 == 5:
+            fetch.append(db_string_to_array(fetch[i]))
+        if index == 15:
+            fetch.append(len(fetch[i]))
+        i += 1
 
     return fetch
 
 
-def deletions_insertions(cursor, file_name) -> (int, int):
+# one document lookup
+def document_info(cursor, file_names, lookup_item):
+    fetch = []
+    for file_name in file_names:
+        # Gets specific document columns
+        cursor = get_like_db(cursor, "Documents", "path", file_name)
+        student_file = cursor.fetchone()
+        index = document_dict[lookup_item]
+        fetch = student_file[index % 10]
+        if index % 10 == 5:
+            fetch = db_string_to_array(fetch)
+        if index == 15:
+            fetch = len(fetch)
+
+    return fetch
+
+
+def deletions_insertions(cursor, file_names) -> (int, int):
     # Counts the number of deletions and insertions
-    document_id = document_info(cursor, file_name, "id")
+
     deletions = 0
     insertions = 0
+    for file_name in file_names:
+        document_id = document_info(cursor, file_name, "id")
+        cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
+        operation_array = cursor.fetchall()
 
-    cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
-    operation_array = cursor.fetchall()
-
-    for operation in operation_array:
-        operation_string = str(operation[0])
-        # print(operation_string)
-        deletions += operation_string.count(',"d')
-        insertions += operation_string.count(',"i')
+        for operation in operation_array:
+            operation_string = str(operation[0])
+            # print(operation_string)
+            deletions += operation_string.count(',"d')
+            insertions += operation_string.count(',"i')
     return deletions, insertions
 
 
@@ -149,19 +172,21 @@ def gather(cursor, file_name):
 def gather_many(cursor, files):
     many_file_pulses = {}
     for file_name in files:
+        # print(file_name)
         # Convert SQLite database to timestamp:operation dictionary
         document_id = document_info(cursor, file_name, "id")
 
         cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
         operation_array = cursor.fetchall()
-
+        # print(operation_array)
         for operation in operation_array:
             operation_str_arr = str(operation[0]).strip("b'").strip('[]').replace('\"', '').split(',')
             for element in operation_str_arr:
                 if element[:1] == 'i':
-                    many_file_pulses[operation[1]] = element[1:]
+                    many_file_pulses[file_name + operation[1]] = element[1:]
 
     # return time: inserted text dictionary
+    # print(many_file_pulses)
     return many_file_pulses
 
 
@@ -176,6 +201,26 @@ def all_pulses(general_pulse):
         data_pulse.append(element_array)
 
     return data_pulse
+
+
+def comment_count(documentz):
+    # Finds programming events in the timestamp:operation dictionary
+    # comments, function, logic
+    comments = []
+    comment_num = 0
+    # print(general_pulse)
+    for element in documentz:
+        element = str(element)
+        comments.append(int(element.find("//")))
+        comments.append(int(element.find("/*")))
+        comments.append(int(element.find("# ")))
+        comments.append(int(element.find("<!--")))
+
+    for i in comments:
+        if i > 0:
+            comment_num += i
+
+    return comment_num
 
 
 def all_files(cursor):
@@ -194,17 +239,54 @@ def all_files(cursor):
     return all_the_files
 
 
+def large_insertion_check(general_pulse):
+    return "False"
+
+
+def all_data(db_file, file_namez):
+    cursor = set_cursor(db_file)
+    cursor = clean_up(cursor)
+
+    file_dat = {}
+
+    names = ""
+    for name in file_namez:
+        names = names + "  " + name
+    file_dat["File Name(s)"] = names
+
+    file_dat["Time Spent on Assignment*"] = "1 Hour"
+
+    # Make sure sorted by date
+    creation_datez = documents_info(cursor, file_namez, "created_at")
+    file_dat["First File Creation Date"] = creation_datez[0]
+    file_dat["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
+
+    edit_datez = documents_info(cursor, file_namez, "updated_at")
+    file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
+
+    deletions, insertions = deletions_insertions(cursor, file_namez)
+    file_dat["Number of Deletion Chuncks*"] = deletions
+    file_dat["Number of Insertion Chuncks*"] = insertions
+    the_pulse = gather_many(cursor, file_namez)
+    file_dat["Number of Comments*"] = comment_count(documents_info(cursor, file_namez, "file_contents"))
+
+    file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
+
+    return file_dat
+
+
 def test():
-    the_cursor = set_cursor("./databases/92316106dd4e4f4baf314dd59dc4354f.db")
-    cursor = clean_up(the_cursor)
-    files_list = all_files(the_cursor)
-    print(files_list)
+    cursor = set_cursor("./databases/collabv32.db")
+    cursor = clean_up(cursor)
+    files_list = all_files(cursor)
+    # print(files_list)
+    the_pulse = gather_many(cursor, files_list)
+    print(comment_count(documents_info(cursor, files_list, "file_contents")))
 
-    doc_file = document_info(cursor, files_list, "saves")
-
-    deletions, insertions = deletions_insertions(cursor, files_list)
-    print(str(deletions) + " " + str(insertions))
-
+    doc_file = documents_info(cursor, files_list, "created_at")
+    # print(doc_file)
+    # deletions, insertions = deletions_insertions(cursor, files_list)
+    # print(str(deletions) + " " + str(insertions))
 
     # general_pulse = gather(cursor, the_file)
     # print(general_pulse)

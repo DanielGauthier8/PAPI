@@ -5,6 +5,7 @@ print("Running")
 
 
 def create_folders(cursor):
+    # No longer used, created a directory of all files created by student from db cursor provided
     # Create folder for user
     cursor.execute('SELECT * FROM Users LIMIT 1')
     user_info = cursor.fetchone()
@@ -64,18 +65,19 @@ def create_folders(cursor):
 
 
 def db_string_to_array(the_string):
+    # Returns sting of byte text
     return str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
 
 
 def set_cursor(filename):
-    # STEP 1: Open file
+    # Returns a cursor to browse the sql database from the file provided
     conn = sqlite3.connect(filename)
     cursor = conn.cursor()
     return cursor
 
 
 def clean_up(cursor):
-    # STEP 2: "DELETE FROM Documents WHERE path LIKE '.%' ;
+    # Returns database with unnessesary data removed
     # Remove all hidden file histories
     cursor.execute("DELETE FROM Documents WHERE path LIKE \'.%\'")
     # STEP 3: "DROP TABLE ChatMessages"
@@ -86,6 +88,7 @@ def clean_up(cursor):
 
 
 def get_like_db(cursor, db_name, column, like_string):
+    # Returns any db row with specfic collumn value
     cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE '%" + like_string + "%'")
     return cursor
 
@@ -96,8 +99,9 @@ document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
                  "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
 
 
-# namez, can be singular or plural
 def documents_info(cursor, file_namez, lookup_item):
+    # namez, can be singular or plural
+    # Returns any metadata from documentz
     fetch = []
     i = 0
     for file_name in file_namez:
@@ -114,9 +118,9 @@ def documents_info(cursor, file_namez, lookup_item):
 
     return fetch
 
-
-# one document lookup
 def document_info(cursor, file_names, lookup_item):
+    # one document lookup
+    # Returns any metadata from a single document
     fetch = []
     for file_name in file_names:
         # Gets specific document columns
@@ -133,8 +137,7 @@ def document_info(cursor, file_names, lookup_item):
 
 
 def deletions_insertions(cursor, file_names) -> (int, int):
-    # Counts the number of deletions and insertions
-
+    # Returns the number of deletions and insertions of filez
     deletions = 0
     insertions = 0
     for file_name in file_names:
@@ -151,7 +154,7 @@ def deletions_insertions(cursor, file_names) -> (int, int):
 
 
 def gather(cursor, file_name):
-    # Convert SQLite database to timestamp:operation dictionary
+    # Convert SQLite database of one file to (timestamp:operation) dictionary
     document_id = document_info(cursor, file_name, "id")
 
     general_pulse = {}
@@ -170,6 +173,7 @@ def gather(cursor, file_name):
 
 
 def gather_many(cursor, files):
+    # Convert SQLite database of many files to a (timestamp:operation) dictionary
     many_file_pulses = {}
     for file_name in files:
         # print(file_name)
@@ -191,6 +195,7 @@ def gather_many(cursor, files):
 
 
 def all_pulses(general_pulse):
+    # TODO All pulses
     # Finds programming events in the timestamp:operation dictionary
     # comments, function, logic
     data_pulse = []
@@ -204,7 +209,7 @@ def all_pulses(general_pulse):
 
 
 def comment_count(documentz):
-    # Finds programming events in the timestamp:operation dictionary
+    # Returns the number of comments in final file
     # comments, function, logic
     comments = []
     comment_num = 0
@@ -224,6 +229,7 @@ def comment_count(documentz):
 
 
 def all_files(cursor):
+
     all_the_files = []
     # Create folder for user
     cursor.execute('SELECT * FROM Users LIMIT 1')
@@ -240,10 +246,12 @@ def all_files(cursor):
 
 
 def large_insertion_check(general_pulse):
+    # TODO Check for large insertions
     return "False"
 
 
 def all_data(db_file, file_namez):
+    # Returns all file metadata
     cursor = set_cursor(db_file)
     cursor = clean_up(cursor)
 

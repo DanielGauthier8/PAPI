@@ -1,83 +1,59 @@
-import os
 import sqlite3
 
 print("Running")
 
 
-def create_folders(cursor):
-    # No longer used, created a directory of all files created by student from db cursor provided
-    # Create folder for user
-    cursor.execute('SELECT * FROM Users LIMIT 1')
-    user_info = cursor.fetchone()
-    # print(user_info[0])
-
-    # Create folder for new assignments
-    if not os.path.exists(user_info[0]):
-        os.makedirs(user_info[0])
-
-    # Create a folder for each assignment
-    cursor.execute("SELECT * FROM Documents")
-    student_file = cursor.fetchone()
-    # First create all the files
-    while student_file is not None:
-        # print(row)
-
-        if not os.path.exists(user_info[0] + '/' + str(student_file[0])):
-            os.makedirs(user_info[0] + '/' + str(student_file[0]))
-        # The database saves the array in a unicode string
-        saved_star_rev = db_string_to_array(student_file[5])
-        # Get the file name, ignore the head of the path name
-        head, tail = os.path.split(student_file[1])
-        # print(string_to_array)
-        for version in range(0, len(saved_star_rev)):
-            # Create versions
-            # Create file with correct name
-            file = open(user_info[0] + '/' + str(student_file[0]) + '/' + saved_star_rev[version] + tail, "w+")
-            # If there is only one version or its the last version
-            if version is '' or version is (len(saved_star_rev) - 1) or version is (len(saved_star_rev) - 2):
-                file.write(student_file[2])
-            file.close()
-        student_file = cursor.fetchone()
-
-    # Then make all the edits to the files backwards
-    cursor.execute("SELECT * FROM Documents WHERE revNum >= 2")
-
-    student_file = cursor.fetchone()
-    head, tail = os.path.split(student_file[1])
-
-    # while student_file is not None:
-
-    document_id_array = db_string_to_array(student_file[5])
-    # Get a document with a revision history
-    cursor.execute("SELECT * FROM Revisions WHERE document_id = " + str(student_file[0]) + " ORDER BY id DESC")
-    student_file_rev_stars = db_string_to_array(student_file[5])
-
-    previous_version_num = student_file_rev_stars[len(student_file_rev_stars) - 2]
-    student_file_history = cursor.fetchone()
-    print(student_file_history[6])
-    while int(student_file_history[0]) > int(previous_version_num):
-        the_operation = db_string_to_array(student_file_history[1])
-        print(the_operation[1][1:])
-        file = open(user_info[0] + '/' + str(student_file_history[6]) + '/' + previous_version_num + tail, "w+")
-        student_file_history = cursor.fetchone()
-
-    file.close()
+# ----------------------------------------Database Management
 
 
 def db_string_to_array(the_string):
-    # Returns sting of byte text
-    return str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
+    """Cleans db strings of leftover byte characters
+
+    Parameters
+    ----------
+    the_string : str
+        The string to be cleaned
+
+    Returns
+    -------
+    the_string
+        A cleaned string
+    """
+    the_string = str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
+    return the_string
 
 
 def set_cursor(filename):
-    # Returns a cursor to browse the sql database from the file provided
+    """Provides a cursor of the sqlite db
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the db to be browsed
+
+    Returns
+    -------
+    cursor
+        A cursor to browse the sql db from the file provided
+    """
     conn = sqlite3.connect(filename)
     cursor = conn.cursor()
     return cursor
 
 
 def clean_up(cursor):
-    # Returns database with unnessesary data removed
+    """Removes private/undesired data from provided db
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+
+    Returns
+    -------
+    cursor
+        Database with unnecessary data removed
+    """
     # Remove all hidden file histories
     cursor.execute("DELETE FROM Documents WHERE path LIKE \'.%\'")
     # STEP 3: "DROP TABLE ChatMessages"
@@ -88,7 +64,23 @@ def clean_up(cursor):
 
 
 def get_like_db(cursor, db_name, column, like_string):
-    # Returns any db row with specfic collumn value
+    """Gets any db row with specific column value
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    db_name : string
+        The name of the database
+    column : string
+        The db column name
+    like_string: string
+        The string to look for in a column
+    Returns
+    -------
+    cursor
+        Cursor object matching column values
+    """
     cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE '%" + like_string + "%'")
     return cursor
 
@@ -99,9 +91,53 @@ document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
                  "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
 
 
-def documents_info(cursor, file_namez, lookup_item):
-    # namez, can be singular or plural
-    # Returns any metadata from documentz
+# ----------------------------------------Data Collection
+
+
+def document_info(cursor, file_name, lookup_item):
+    """Gets any specific file metadata from a final resulting file
+
+        Parameters
+        ----------
+        cursor : cursor
+            The current db cursor object
+        file_name : string
+            The filename of the file to lookup
+        lookup_item : string
+            The name of the metadata to be accessed, have to be in document_dict list
+        Returns
+        -------
+        fetch
+            String of metadata
+        """
+    cursor = get_like_db(cursor, "Documents", "path", file_name)
+    student_file = cursor.fetchone()
+    index = document_dict[lookup_item]
+    fetch = student_file[index % 10]
+    if index % 10 == 5:
+        fetch = db_string_to_array(fetch)
+    if index == 15:
+        fetch = len(fetch)
+
+    return fetch
+
+
+def documentz_info(cursor, file_namez, lookup_item):
+    """Gets any specific file metadata from a list of final resulting filez
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    file_namez : list
+        List of files to look through
+    lookup_item : string
+        The name of the metadata to be accessed, have to be in document_dict list
+    Returns
+    -------
+    fetch
+        List of metadata
+    """
     fetch = []
     i = 0
     for file_name in file_namez:
@@ -119,41 +155,20 @@ def documents_info(cursor, file_namez, lookup_item):
     return fetch
 
 
-def document_info(cursor, file_name, lookup_item):
-    # one document lookup
-    # Returns any metadata from a single document
-    # Gets specific document columns
-    cursor = get_like_db(cursor, "Documents", "path", file_name)
-    student_file = cursor.fetchone()
-    index = document_dict[lookup_item]
-    fetch = student_file[index % 10]
-    if index % 10 == 5:
-        fetch = db_string_to_array(fetch)
-    if index == 15:
-        fetch = len(fetch)
-
-    return fetch
-
-
-def deletions_insertions(cursor, file_names) -> (int, int):
-    # Returns the number of deletions and insertions of filez
-    deletions = 0
-    insertions = 0
-    for file_name in file_names:
-        document_id = document_info(cursor, file_name, "id")
-        cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
-        operation_array = cursor.fetchall()
-
-        for operation in operation_array:
-            operation_string = str(operation[0])
-            # print(operation_string)
-            deletions += operation_string.count(',"d')
-            insertions += operation_string.count(',"i')
-    return deletions, insertions
-
-
 def gather(cursor, file_name):
-    # Convert SQLite database of one file to (timestamp:operation) dictionary
+    """Converts SQLite db into an easier to manage dictionary
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    file_name : string
+        Name of the file to create dictionary of
+    Returns
+    -------
+    general_pulse
+        Dictionary of db (filename::return time, inserted_text)
+    """
     document_id = document_info(cursor, file_name, "id")
     general_pulse = {}
 
@@ -166,26 +181,46 @@ def gather(cursor, file_name):
             if element[:1] == 'i' and len(element[1:]) > 0:
                 general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace("////", "")
 
-    # return time: inserted text :: dictionary
+    # (filename::return time, inserted_text) -> dictionary
     return general_pulse
 
 
 def gather_many(cursor, files):
-    # Convert SQLite database of many files to a (timestamp:operation) dictionary
+    """Converts SQLite db into an easier to manage dictionary
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    files : list
+        Names of the files to create dictionary of
+    Returns
+    -------
+    general_pulse
+        Dictionary of db (filename::return time, inserted_text)
+    """
     many_file_pulses = {}
     for file_name in files:
         # print(file_name)
         gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
 
-    # return - time: inserted text - > dictionary
-    # print(many_file_pulses)
     return many_file_pulses
 
 
 def all_pulses(general_pulse):
+    """Finds programming events in dictionary by converting key value pairs into parsable actions
+
+    Parameters
+    ----------
+    general_pulse : dictionary
+        Dictionary of timestamped and user action
+    Returns
+    -------
+    data_pulse
+        New parsable dictionary
+    """
     # TODO All pulses
-    # Finds programming events in the timestamp:operation dictionary
     # comments, function, logic
     data_pulse = []
 
@@ -197,7 +232,48 @@ def all_pulses(general_pulse):
     return data_pulse
 
 
+def all_files(cursor):
+    """Finds all filenames in db
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    Returns
+    -------
+    all_the_files
+        List of filenames
+    """
+    all_the_files = []
+    # Create folder for user
+    cursor.execute('SELECT * FROM Users LIMIT 1')
+    user_info = cursor.fetchone()
+    # print(user_info[0])
+
+    cursor.execute("SELECT * FROM Documents")
+    student_file = cursor.fetchone()
+    # First create all the files
+    while student_file is not None:
+        all_the_files.append(student_file[1])
+        student_file = cursor.fetchone()
+    return all_the_files
+
+
+# ----------------------------------------Data Generation
+
+
 def comment_count(documentz):
+    """Gets the number of comments in file in its current state
+
+    Parameters
+    ----------
+    documentz : list
+        List of documents to count comments in
+    Returns
+    -------
+    comment_num
+        Number of comments
+    """
     # Returns the number of comments in final file
     # comments, function, logic
     comments = []
@@ -217,26 +293,21 @@ def comment_count(documentz):
     return comment_num
 
 
-def all_files(cursor):
-
-    all_the_files = []
-    # Create folder for user
-    cursor.execute('SELECT * FROM Users LIMIT 1')
-    user_info = cursor.fetchone()
-    # print(user_info[0])
-
-    cursor.execute("SELECT * FROM Documents")
-    student_file = cursor.fetchone()
-    # First create all the files
-    while student_file is not None:
-        all_the_files.append(student_file[1])
-        student_file = cursor.fetchone()
-    return all_the_files
-
-
 def large_insertion_check(general_pulse):
-    # Finds the average insertion size of the user, if there are elements with a greater than 800% difference
+    # Finds the average insertion size of the user,
+    # if there are elements with a greater than 800% difference
     # between the regular insertion size the element is flagged
+    """Gets the number of comments in file in its current state
+
+    Parameters
+    ----------
+    general_pulse : dictionary
+        Dictionary of user actions
+    Returns
+    -------
+    comment_num
+        Number of comments
+    """
     large_insertions = {}
     average = 0
     for element in general_pulse:
@@ -256,6 +327,32 @@ def large_insertion_check(general_pulse):
     return -1
 
 
+def time_spent(cursor, file_names):
+    # TODO: Calculates the time spent on each set of files provided
+    total_time = 0
+    return total_time
+
+
+def deletions_insertions(cursor, file_names) -> (int, int):
+    # Returns the number of deletions and insertions of filez
+    deletions = 0
+    insertions = 0
+    for file_name in file_names:
+        document_id = document_info(cursor, file_name, "id")
+        cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
+        operation_array = cursor.fetchall()
+
+        for operation in operation_array:
+            operation_string = str(operation[0])
+            # print(operation_string)
+            deletions += operation_string.count(',"d')
+            insertions += operation_string.count(',"i')
+    return deletions, insertions
+
+
+# ----------------------------------------Website Actions
+
+
 def all_data(db_file, file_namez):
     # Returns all file metadata
     cursor = set_cursor(db_file)
@@ -271,22 +368,25 @@ def all_data(db_file, file_namez):
     file_dat["Time Spent on Assignment*"] = "1 Hour"
 
     # Make sure sorted by date
-    creation_datez = documents_info(cursor, file_namez, "created_at")
+    creation_datez = documentz_info(cursor, file_namez, "created_at")
     file_dat["First File Creation Date"] = creation_datez[0]
     file_dat["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
 
-    edit_datez = documents_info(cursor, file_namez, "updated_at")
+    edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
     deletions, insertions = deletions_insertions(cursor, file_namez)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
     the_pulse = gather_many(cursor, file_namez)
-    file_dat["Number of Comments*"] = comment_count(documents_info(cursor, file_namez, "file_contents"))
+    file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
     file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
 
     return file_dat
+
+
+# ----------------------------------------Debugging
 
 
 def test():

@@ -1,5 +1,5 @@
-import sqlite3
 import os
+import sqlite3
 
 print("Running")
 
@@ -118,20 +118,19 @@ def documents_info(cursor, file_namez, lookup_item):
 
     return fetch
 
-def document_info(cursor, file_names, lookup_item):
+
+def document_info(cursor, file_name, lookup_item):
     # one document lookup
     # Returns any metadata from a single document
-    fetch = []
-    for file_name in file_names:
-        # Gets specific document columns
-        cursor = get_like_db(cursor, "Documents", "path", file_name)
-        student_file = cursor.fetchone()
-        index = document_dict[lookup_item]
-        fetch = student_file[index % 10]
-        if index % 10 == 5:
-            fetch = db_string_to_array(fetch)
-        if index == 15:
-            fetch = len(fetch)
+    # Gets specific document columns
+    cursor = get_like_db(cursor, "Documents", "path", file_name)
+    student_file = cursor.fetchone()
+    index = document_dict[lookup_item]
+    fetch = student_file[index % 10]
+    if index % 10 == 5:
+        fetch = db_string_to_array(fetch)
+    if index == 15:
+        fetch = len(fetch)
 
     return fetch
 
@@ -156,19 +155,18 @@ def deletions_insertions(cursor, file_names) -> (int, int):
 def gather(cursor, file_name):
     # Convert SQLite database of one file to (timestamp:operation) dictionary
     document_id = document_info(cursor, file_name, "id")
-
     general_pulse = {}
 
     cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
     operation_array = cursor.fetchall()
 
-    for operation in operation_array:
-        operation_str_arr = str(operation[0]).strip("b'").strip('[]').replace('\"', '').split(',')
+    for text in operation_array:
+        operation_str_arr = db_string_to_array(text[0])
         for element in operation_str_arr:
-            if element[:1] == 'i':
-                general_pulse[operation[1]] = element[1:]
+            if element[:1] == 'i' and len(element[1:]) > 0:
+                general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace("////", "")
 
-    # return time: inserted text dictionary
+    # return time: inserted text :: dictionary
     return general_pulse
 
 
@@ -177,19 +175,10 @@ def gather_many(cursor, files):
     many_file_pulses = {}
     for file_name in files:
         # print(file_name)
-        # Convert SQLite database to timestamp:operation dictionary
-        document_id = document_info(cursor, file_name, "id")
+        gathered = gather(cursor, file_name)
+        many_file_pulses = {**many_file_pulses, **gathered}
 
-        cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
-        operation_array = cursor.fetchall()
-        # print(operation_array)
-        for operation in operation_array:
-            operation_str_arr = str(operation[0]).strip("b'").strip('[]').replace('\"', '').split(',')
-            for element in operation_str_arr:
-                if element[:1] == 'i':
-                    many_file_pulses[file_name + operation[1]] = element[1:]
-
-    # return time: inserted text dictionary
+    # return - time: inserted text - > dictionary
     # print(many_file_pulses)
     return many_file_pulses
 
@@ -246,8 +235,25 @@ def all_files(cursor):
 
 
 def large_insertion_check(general_pulse):
-    # TODO Check for large insertions
-    return "False"
+    # Finds the average insertion size of the user, if there are elements with a greater than 800% difference
+    # between the regular insertion size the element is flagged
+    large_insertions = {}
+    average = 0
+    for element in general_pulse:
+        # print(general_pulse[element])
+        average += len(general_pulse[element])
+
+    average = average / len(general_pulse)
+    for element in general_pulse:
+        if (len(str(general_pulse[element]).replace("////", "").replace(" ", "")) > average * 8 and \
+            len(general_pulse[element].replace("////", "").replace(" ", "")) > 40) \
+                or len(general_pulse[element]) > 400:
+            large_insertions[element] = str(general_pulse[element]).replace("\n", "<br/>").replace("////", "")
+
+    if len(large_insertions) > 0:
+        return large_insertions
+
+    return -1
 
 
 def all_data(db_file, file_namez):
@@ -284,14 +290,14 @@ def all_data(db_file, file_namez):
 
 
 def test():
-    cursor = set_cursor("./databases/collabv32.db")
+    cursor = set_cursor("./databases/34567654.db")
     cursor = clean_up(cursor)
     files_list = all_files(cursor)
     # print(files_list)
     the_pulse = gather_many(cursor, files_list)
-    print(comment_count(documents_info(cursor, files_list, "file_contents")))
-
-    doc_file = documents_info(cursor, files_list, "created_at")
+    print(the_pulse)
+    # print(large_insertion_check(the_pulse))
+    # doc_file = documents_info(cursor, files_list, "created_at")
     # print(doc_file)
     # deletions, insertions = deletions_insertions(cursor, files_list)
     # print(str(deletions) + " " + str(insertions))
@@ -305,4 +311,4 @@ def test():
     return 0
 
 
-# test()
+test()

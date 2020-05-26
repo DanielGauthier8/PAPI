@@ -294,10 +294,9 @@ def comment_count(documentz):
 
 
 def large_insertion_check(general_pulse):
-    # Finds the average insertion size of the user,
-    # if there are elements with a greater than 800% difference
-    # between the regular insertion size the element is flagged
-    """Gets the number of comments in file in its current state
+    """Finds the average insertion size of the user,
+    if there are elements with a greater than 800% difference
+    between the regular insertion size the element is flagged
 
     Parameters
     ----------
@@ -305,16 +304,20 @@ def large_insertion_check(general_pulse):
         Dictionary of user actions
     Returns
     -------
-    comment_num
-        Number of comments
+    large_insertions
+        Large insertions in dictionary with file information as key
     """
     large_insertions = {}
     average = 0
     for element in general_pulse:
         # print(general_pulse[element])
+
         average += len(general_pulse[element])
 
-    average = average / len(general_pulse)
+    try:
+        average = average / len(general_pulse)
+    except ZeroDivisionError:
+        average = 0
     for element in general_pulse:
         if (len(str(general_pulse[element]).replace("////", "").replace(" ", "")) > average * 8 and \
             len(general_pulse[element].replace("////", "").replace(" ", "")) > 40) \
@@ -327,14 +330,39 @@ def large_insertion_check(general_pulse):
     return -1
 
 
-def time_spent(cursor, file_names):
+def time_spent(general_pulse):
+    """Calculates the time spent on each set of files provided
+
+        Parameters
+        ----------
+        general_pulse : dictionary
+            Dictionary of user actions
+        Returns
+        -------
+        total_time
+            Total time spent on the assignment in minutes
+        """
     # TODO: Calculates the time spent on each set of files provided
     total_time = 0
     return total_time
 
 
 def deletions_insertions(cursor, file_names) -> (int, int):
-    # Returns the number of deletions and insertions of filez
+    """Gets the number of deletions and insertions of filez
+
+    Parameters
+    ----------
+    cursor : cursor
+        The current db cursor object
+    file_names : list
+        Names of the files to look through
+    Returns
+    -------
+    deletions
+        The number of deletions of the filez provided
+    insertions
+        The number of insertions of the filez provided
+    """
     deletions = 0
     insertions = 0
     for file_name in file_names:
@@ -354,6 +382,19 @@ def deletions_insertions(cursor, file_names) -> (int, int):
 
 
 def all_data(db_file, file_namez):
+    """Calls all required helper functions to get all non-graphic metadata
+
+    Parameters
+    ----------
+    db_file : string
+        The current db file name
+    file_namez : list
+        Names of the files to look through
+    Returns
+    -------
+    file_dat
+        Dictionary of all metadata retrieved
+    """
     # Returns all file metadata
     cursor = set_cursor(db_file)
     cursor = clean_up(cursor)

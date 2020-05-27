@@ -33,12 +33,18 @@
 						<h1>Files</h1>
 					</header>
 					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+
+
 					<form method="post" action="#">
+						<input type="checkbox" id="select_all_files" name="chosen_files" value="All Files">
+						<label for="select_all_files">All Files</label>
+						<br/><br/>
 						{% for each in files_list %}
-							<input type="checkbox" id="id_{{each}}" name="chosen_files" value="{{each}}">
-    						<label for="id_{{each}}">{{each}}</label>
+						<input type="checkbox" id="id_{{each}}" name="chosen_files" value="{{each}}">
+						<label for="id_{{each}}">{{each}}</label>
 
 						{% endfor %}
+						<br/>
 						<input type="submit" value="Submit">
 					</form>
 				</div>

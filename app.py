@@ -60,20 +60,22 @@ def results():
     time.sleep(2)
     cursor = set_cursor(session['file_name'])
     cursor = clean_up(cursor)
-    files_list = all_files(cursor)
+
     if "chosen_files" not in session:
         session['chosen_files'] = None
+    session['chosen_files'] = all_files(cursor)
+
     if request.method == 'POST':
-        # print(request.form.getlist('chosen_files'))
-        session['chosen_files'] = request.form.getlist('chosen_files')
+        temp = request.form.getlist('chosen_files')
+        if "All Files" not in str(temp):
+            session['chosen_files'] = temp
         return redirect(url_for('file_analysis'))
-    return render_template('student_info.html', files_list=files_list)
+    return render_template('student_info.html', files_list=session['chosen_files'])
 
 
 @app.route('/file_analysis')
 def file_analysis():
     file_dat = all_data(session['file_name'], session['chosen_files'])
-
     print(file_dat)
 
     return render_template('file_analysis.html', file_dat=file_dat)

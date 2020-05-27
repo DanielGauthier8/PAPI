@@ -194,7 +194,8 @@ def gather(cursor, file_name):
         operation_str_arr = str(text).strip('[]b').strip("'").replace('\"', '').split(',')
         for element in operation_str_arr:
             if element[:1] == 'i' and len(element[1:]) > 0:
-                general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace("////", "")
+                general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace(
+                    "///time_spent(time_list)/", "")
                 current_timeline.append(datetime.datetime.strptime(text[1], '%Y-%m-%d %H:%M:%S'))
 
     # (filename::return time, inserted_text) -> dictionary
@@ -218,7 +219,6 @@ def gather_many(cursor, files):
     many_file_pulses = {}
     current_timeline = []
     for file_name in files:
-        # print(file_name)
         times_only, gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
         current_timeline += times_only
@@ -241,11 +241,22 @@ def all_pulses(general_pulse):
     # TODO All pulses
     # comments, function, logic
     data_pulse = []
-
+    # comments, logic, operations, return
+    comments_list = []
+    logic_list = []
+    operation_list = []
+    return_list = []
     for element in general_pulse:
-        element_array = [element, general_pulse[element], general_pulse[element].count("//") +
-                         general_pulse[element].count("/*")]
-        data_pulse.append(element_array)
+        comments_list.append(general_pulse[element].count("//") +
+                             general_pulse[element].count("/*"))
+        logic_list.append(general_pulse[element].count("if") +
+                          general_pulse[element].count("elif") + general_pulse[element].count("else"))
+        operation_list.append(general_pulse[element].count("=") + general_pulse[element].count("+=") +
+                              general_pulse[element].count("-=") + general_pulse[element].count("*"))
+        return_list = (general_pulse[element].count("*="), general_pulse[element].count("return"))
+
+    print(comments_list)
+    data_pulse = [comments_list, logic_list, operation_list, return_list]
 
     return data_pulse
 
@@ -357,15 +368,16 @@ def time_spent(timeline_list):
         List of datetime, each a user action
     Returns
     -------
-    total_time
-        Total time spent on the assignment in minutes
+    time_data_array
+        Dictionary with name as key and value as data
     """
-    # TODO: Calculates the time spent on each set of files provided
     sessions_list = []
     session = []
-    total_time = 0
     number_of_days = 0
     average_session_length = 0
+    # If only one edit in a day
+    if len(timeline_list) == 1:
+        return {"Time Worked on Assigment": 5, "Number of Work Sessions": 1, "Over Number of Days": 1}
 
     try:
         previous = timeline_list[0]
@@ -375,20 +387,24 @@ def time_spent(timeline_list):
     timeline_list.sort()
 
     for user_action_time in timeline_list:
-        session.append(user_action_time)
         if user_action_time.date() > previous.date():
             number_of_days += 1
         if user_action_time > previous + datetime.timedelta(minutes=5):
             sessions_list.append(session)
-            for i in session:
-                print(i)
-
-            print("")
             session = []
+        session.append(user_action_time)
 
         previous = user_action_time
+    total_time = None
+    current_time = 0
+    for the_session in sessions_list:
 
-    return total_time
+        current_time = the_session[len(the_session) - 1] - the_session[0]
+        if total_time is None:
+            total_time = current_time
+        total_time = total_time + current_time
+    return {"Time Worked": str(total_time), "Number of Work Sessions": len(sessions_list),
+            "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
 
 
 def deletions_insertions(cursor, file_names) -> (int, int):
@@ -450,7 +466,9 @@ def all_data(db_file, file_namez):
         names = names + "  " + name
     file_dat["File Name(s)"] = names
 
-    file_dat["Time Spent on Assignment*"] = "1 Hour"
+    time_list, the_pulse = gather_many(cursor, file_namez)
+    time_data = time_spent(time_list)
+    file_dat = {**file_dat, **time_data}
 
     # Make sure sorted by date
     creation_datez = documentz_info(cursor, file_namez, "created_at")
@@ -463,7 +481,7 @@ def all_data(db_file, file_namez):
     deletions, insertions = deletions_insertions(cursor, file_namez)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
-    time_list, the_pulse = gather_many(cursor, file_namez)
+
     file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
     file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
@@ -481,7 +499,7 @@ def test():
     # print(files_list)
     time_list, the_pulse = gather_many(cursor, files_list)
     # print(time_list)
-    output = time_spent(time_list)
+    output = all_pulses(the_pulse)
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)
@@ -490,7 +508,6 @@ def test():
 
     # general_pulse = gather(cursor, the_file)
     # print(general_pulse)
-    # data_pulse = all_pulses(general_pulse)
     #
     # print(data_pulse)
 
@@ -498,5 +515,4 @@ def test():
 
     return 0
 
-
-test()
+# test()

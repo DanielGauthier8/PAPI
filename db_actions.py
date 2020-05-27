@@ -1,6 +1,5 @@
 import sqlite3
 import datetime
-import re
 
 print("Running")
 
@@ -245,18 +244,20 @@ def all_pulses(general_pulse):
     comments_list = []
     logic_list = []
     operation_list = []
-    return_list = []
+    output_list = []
     for element in general_pulse:
         comments_list.append(general_pulse[element].count("//") +
                              general_pulse[element].count("/*"))
+
         logic_list.append(general_pulse[element].count("if") +
                           general_pulse[element].count("elif") + general_pulse[element].count("else"))
-        operation_list.append(general_pulse[element].count("=") + general_pulse[element].count("+=") +
-                              general_pulse[element].count("-=") + general_pulse[element].count("*"))
-        return_list = (general_pulse[element].count("*="), general_pulse[element].count("return"))
 
-    print(comments_list)
-    data_pulse = [comments_list, logic_list, operation_list, return_list]
+        operation_list.append(general_pulse[element].count("=") + general_pulse[element].count("+=") +
+                              general_pulse[element].count("-=") + general_pulse[element].count("*") +
+                              general_pulse[element].count("*="))
+
+        output_list.append(general_pulse[element].count("return") + general_pulse[element].count("cout"))
+    data_pulse = [comments_list, logic_list, operation_list, output_list]
 
     return data_pulse
 
@@ -423,6 +424,8 @@ def deletions_insertions(cursor, file_names) -> (int, int):
     insertions
         The number of insertions of the filez provided
     """
+    deletions_list = []
+    insertions_list = []
     deletions = 0
     insertions = 0
     for file_name in file_names:
@@ -432,10 +435,13 @@ def deletions_insertions(cursor, file_names) -> (int, int):
 
         for operation in operation_array:
             operation_string = str(operation[0])
-            # print(operation_string)
-            deletions += operation_string.count(',"d')
-            insertions += operation_string.count(',"i')
-    return deletions, insertions
+            if operation_string.count(',"d') > 0:
+                deletions_list.append(1)
+            if operation_string.count(',"i') > 0:
+                insertions_list.append(1)
+                deletions = deletions.sum
+                insertions = insertions.sum
+    return deletions, insertions, deletions_list, insertions_list
 
 
 # ----------------------------------------Website Actions
@@ -478,7 +484,7 @@ def all_data(db_file, file_namez):
     edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
-    deletions, insertions = deletions_insertions(cursor, file_namez)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(cursor, file_namez)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
 
@@ -493,7 +499,7 @@ def all_data(db_file, file_namez):
 
 
 def test():
-    cursor = set_cursor("./databases/34567654.db")
+    cursor = set_cursor("./databases/jgoldman2468.db")
     cursor = clean_up(cursor)
     files_list = all_files(cursor)
     # print(files_list)
@@ -511,8 +517,7 @@ def test():
     #
     # print(data_pulse)
 
-    print(output)
-
     return 0
 
-# test()
+
+test()

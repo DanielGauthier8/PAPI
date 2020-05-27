@@ -1,4 +1,6 @@
 import sqlite3
+import datetime
+import re
 
 print("Running")
 
@@ -19,8 +21,21 @@ def db_string_to_array(the_string):
     the_string
         A cleaned string
     """
-    the_string = str(the_string).strip('[]b').strip("'").replace('\"', '').split(',')
-    return the_string
+    the_string = str(the_string).replace('b', '').replace('[', '').replace(']', '').replace("'", '').replace('\"', '')
+    the_string.split(',')
+    test_list = []
+    # Empty list
+    if len(the_string) == 1 and (the_string[0] == '' or the_string[0] == '[]'):
+        the_string = []
+
+    try:
+        test_list = [int(i) for i in the_string]
+    except TypeError:
+        return the_string
+    except ValueError:
+        return the_string
+
+    return test_list
 
 
 def set_cursor(filename):
@@ -149,7 +164,7 @@ def documentz_info(cursor, file_namez, lookup_item):
         if index % 10 == 5:
             fetch.append(db_string_to_array(fetch[i]))
         if index == 15:
-            fetch.append(len(fetch[i]))
+            fetch.append(len(db_string_to_array(fetch[i])))
         i += 1
 
     return fetch
@@ -171,18 +186,19 @@ def gather(cursor, file_name):
     """
     document_id = document_info(cursor, file_name, "id")
     general_pulse = {}
-
+    current_timeline = []
     cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
     operation_array = cursor.fetchall()
 
     for text in operation_array:
-        operation_str_arr = db_string_to_array(text[0])
+        operation_str_arr = str(text).strip('[]b').strip("'").replace('\"', '').split(',')
         for element in operation_str_arr:
             if element[:1] == 'i' and len(element[1:]) > 0:
                 general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace("////", "")
+                current_timeline.append(datetime.datetime.strptime(text[1], '%Y-%m-%d %H:%M:%S'))
 
     # (filename::return time, inserted_text) -> dictionary
-    return general_pulse
+    return current_timeline, general_pulse
 
 
 def gather_many(cursor, files):
@@ -200,12 +216,14 @@ def gather_many(cursor, files):
         Dictionary of db (filename::return time, inserted_text)
     """
     many_file_pulses = {}
+    current_timeline = []
     for file_name in files:
         # print(file_name)
-        gathered = gather(cursor, file_name)
+        times_only, gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
+        current_timeline += times_only
 
-    return many_file_pulses
+    return current_timeline, many_file_pulses
 
 
 def all_pulses(general_pulse):
@@ -238,7 +256,7 @@ def all_files(cursor):
     Parameters
     ----------
     cursor : cursor
-        The current db cursor object
+        The current db cursor object action_times
     Returns
     -------
     all_the_files
@@ -330,20 +348,46 @@ def large_insertion_check(general_pulse):
     return -1
 
 
-def time_spent(general_pulse):
+def time_spent(timeline_list):
     """Calculates the time spent on each set of files provided
 
-        Parameters
-        ----------
-        general_pulse : dictionary
-            Dictionary of user actions
-        Returns
-        -------
-        total_time
-            Total time spent on the assignment in minutes
-        """
+    Parameters
+    ----------
+    timeline_list : list
+        List of datetime, each a user action
+    Returns
+    -------
+    total_time
+        Total time spent on the assignment in minutes
+    """
     # TODO: Calculates the time spent on each set of files provided
+    sessions_list = []
+    session = []
     total_time = 0
+    number_of_days = 0
+    average_session_length = 0
+
+    try:
+        previous = timeline_list[0]
+    except IndexError:
+        return 0
+
+    timeline_list.sort()
+
+    for user_action_time in timeline_list:
+        session.append(user_action_time)
+        if user_action_time.date() > previous.date():
+            number_of_days += 1
+        if user_action_time > previous + datetime.timedelta(minutes=5):
+            sessions_list.append(session)
+            for i in session:
+                print(i)
+
+            print("")
+            session = []
+
+        previous = user_action_time
+
     return total_time
 
 
@@ -412,14 +456,14 @@ def all_data(db_file, file_namez):
     creation_datez = documentz_info(cursor, file_namez, "created_at")
     file_dat["First File Creation Date"] = creation_datez[0]
     file_dat["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
-
+    # TODO: file_dat["Number of Saves"] = sum(documentz_info(cursor, file_namez, "saves"))
     edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
     deletions, insertions = deletions_insertions(cursor, file_namez)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
-    the_pulse = gather_many(cursor, file_namez)
+    time_list, the_pulse = gather_many(cursor, file_namez)
     file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
     file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
@@ -435,10 +479,11 @@ def test():
     cursor = clean_up(cursor)
     files_list = all_files(cursor)
     # print(files_list)
-    the_pulse = gather_many(cursor, files_list)
-    print(the_pulse)
+    time_list, the_pulse = gather_many(cursor, files_list)
+    # print(time_list)
+    output = time_spent(time_list)
     # print(large_insertion_check(the_pulse))
-    # doc_file = documents_info(cursor, files_list, "created_at")
+    # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)
     # deletions, insertions = deletions_insertions(cursor, files_list)
     # print(str(deletions) + " " + str(insertions))
@@ -448,6 +493,8 @@ def test():
     # data_pulse = all_pulses(general_pulse)
     #
     # print(data_pulse)
+
+    print(output)
 
     return 0
 

@@ -1,0 +1,15 @@
+# Creating a gitignore to not pollute dan's work
+
+# Exclude python3 virutalenv 
+vevn/**
+__pycache__/**
+venv/bin/python
+venv/bin/python3
+venv/lib64
+venv/pyvenv.cfg
+
+# Exclude databases
+databases/**
+
+# Exclude copies
+*.cpy.py

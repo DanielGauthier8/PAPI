@@ -69,7 +69,7 @@ def clean_up(cursor):
         Database with unnecessary data removed
     """
     # Remove all hidden file histories
-    cursor.execute("DELETE FROM Documents WHERE path LIKE \'.%\'")
+    # cursor.execute("DELETE FROM Documents WHERE path LIKE \'.%\'")
     # STEP 3: "DROP TABLE ChatMessages"
     cursor.execute('DROP TABLE IF EXISTS ChatMessages')
     # STEP 4: "DROP TABLE Environments"
@@ -406,6 +406,7 @@ def time_spent(timeline_list):
         total_time = total_time + current_time
     return {"Time Worked": str(total_time), "Number of Work Sessions": len(sessions_list),
             "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
+        "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
 
 
 def deletions_insertions(cursor, file_names) -> (int, int):
@@ -426,22 +427,24 @@ def deletions_insertions(cursor, file_names) -> (int, int):
     """
     deletions_list = []
     insertions_list = []
+    activity_times = [[], []] # 0: insertions, 1: deletions
     deletions = 0
     insertions = 0
     for file_name in file_names:
         document_id = document_info(cursor, file_name, "id")
-        cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
+        cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
         operation_array = cursor.fetchall()
 
         for operation in operation_array:
             operation_string = str(operation[0])
             if operation_string.count(',"d') > 0:
                 deletions_list.append(1)
+                activity_times[1].append(operation[1])
+
             if operation_string.count(',"i') > 0:
                 insertions_list.append(1)
                 deletions = deletions.sum
                 insertions = insertions.sum
-    return deletions, insertions, deletions_list, insertions_list
 
 
 # ----------------------------------------Website Actions
@@ -484,9 +487,14 @@ def all_data(db_file, file_namez):
     edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(cursor, file_namez)
+    deletions, insertions, deletions_list, insertions_list, activity_times = deletions_insertions(cursor, file_namez)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
+    
+    
+    file_dat["Activity Heatmap"] = activity_times
+    # file_dat["Time Heatmap"] = time_list
+
 
     file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
@@ -520,4 +528,4 @@ def test():
     return 0
 
 
-test()
+# test()

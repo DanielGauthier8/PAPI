@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Generic - Introspect by TEMPLATED</title>
+		<title>PAPI</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
@@ -16,11 +16,11 @@
 		<!-- Header -->
 			<header id="header">
 				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">introspect</a>
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
-						<a href="generic.html">Generic</a>
-						<a href="elements.html">Elements</a>
+						<a href="#one">Overview</a>
+						<a href="#two">Trends</a>
 					</nav>
 				</div>
 			</header>
@@ -56,6 +56,14 @@
 								</tr>
 								{% endfor %}
 							</table>
+						</div>
+					</section>
+					<!-- Heatmap starts here-->
+					<section id="two">
+						<div class="content" style="text-align: center">
+							<h1>Student work Schedule Heatmap</h1>
+
+						<canvas id="heatmap"></canvas>
 						</div>
 					</section>
 					{% if file_dat["Large Text Insertion Detection*"] != -1 %}
@@ -103,5 +111,49 @@
 			<script src="../static/assets/js/util.js"></script>
 			<script src="../static/assets/js/main.js"></script>
 
+		<!-- Used for activity heatmap -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+		<script>
+			var ctx = document.getElementById('heatmap').getContext('2d');
+			var activity = JSON.parse(`{{ file_dat['Activity Heatmap']|tojson }}`);
+			var data = [{}, {}];
+			var data2 = [[], []];
+			var labels = new Set();
+			for(var i = 0; i < data.length; i++){
+				activity[i].map(day => {data[i][moment(day).format("YYYYDMM")] ? data[i][moment(day).format("YYYYDMM")] += 1 : data[i][moment(day).format("YYYYDMM")] = 1; labels.add(moment(day).format("M/D/YYYY"))})
+				
+				for(let [key, value] of Object.entries(data[i])){
+					data2[i].push(value);
+				}
+			}
+
+			let myBar = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: [...labels.entries()],
+					datasets: [
+					{
+						label: 'insertions',
+						backgroundColor: "green",
+						data: data2[0],
+					},
+					{
+						label: 'deletions',
+						backgroundColor: "red",
+						data: data2[1],
+					},
+					
+					],
+				},
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					}
+				}
+			});
+
+		</script>
 	</body>
 </html>

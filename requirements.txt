@@ -1,2 +1,6 @@
 flask
 werkzeug
+matplotlib
+numpy
+datetime
+sqlite3

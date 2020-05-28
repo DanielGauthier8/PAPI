@@ -1,7 +1,17 @@
 import sqlite3
 import datetime
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 
 print("Running")
+
+
+# ----------------------------------------Helper Functions
+def remove_char_from_string(the_string, the_characters):
+    for the_char in the_characters:
+        the_string = the_string.replace(the_char, "")
+    return the_string
 
 
 # ----------------------------------------Database Management
@@ -20,8 +30,9 @@ def db_string_to_array(the_string):
     the_string
         A cleaned string
     """
-    the_string = str(the_string).replace('b', '').replace('[', '').replace(']', '').replace("'", '').replace('\"', '')
-    the_string.split(',')
+    the_string = remove_char_from_string(str(the_string), ['b', '[', ']', "'", '\"'])
+
+    the_string = the_string.split(',')
     test_list = []
     # Empty list
     if len(the_string) == 1 and (the_string[0] == '' or the_string[0] == '[]'):
@@ -181,22 +192,38 @@ def gather(cursor, file_name):
     Returns
     -------
     general_pulse
-        Dictionary of db (filename::return time, inserted_text)
+        Dictionary of user insertions and deletions (filename::return time, inserted_text)
     """
     document_id = document_info(cursor, file_name, "id")
     general_pulse = {}
     current_timeline = []
+
     cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
     operation_array = cursor.fetchall()
 
     for text in operation_array:
-        operation_str_arr = str(text).strip('[]b').strip("'").replace('\"', '').split(',')
-        for element in operation_str_arr:
-            if element[:1] == 'i' and len(element[1:]) > 0:
-                general_pulse[file_name + "::" + text[1]] = str(element[1:]).replace("\\\\n", "").replace(
-                    "///time_spent(time_list)/", "")
-                current_timeline.append(datetime.datetime.strptime(text[1], '%Y-%m-%d %H:%M:%S'))
+        block_insertions = "i"
+        block_deletions = "d"
+        operation_str_arr = db_string_to_array(text)
+        # print(operation_str_arr)
+        if len(operation_str_arr) > 2:
+            for element in operation_str_arr:
 
+                # Only insertions and deletions, ignoring space only actions
+                if len(element) - element.count(' ') > 1 and (element[:1] == "i" or element[:1] == "d"):
+
+                    if element[:1] == "i":
+                        block_insertions += str(element[1:])
+                    if element[:1] == "d":
+                        block_deletions += str(element[1:])
+            the_timestamp = datetime.datetime.strptime(text[len(text) - 1], '%Y-%m-%d %H:%M:%S')
+            while file_name + "::" + str(the_timestamp) in general_pulse:
+                the_timestamp += datetime.timedelta(seconds=1)
+
+            general_pulse[file_name + "::" + str(the_timestamp)] = \
+                [str(block_insertions).replace("\\\\n", "").replace("////", ""),
+                 block_deletions.replace("\\\\n", "").replace("////", "")]
+            current_timeline.append(the_timestamp)
     # (filename::return time, inserted_text) -> dictionary
     return current_timeline, general_pulse
 
@@ -213,7 +240,7 @@ def gather_many(cursor, files):
     Returns
     -------
     general_pulse
-        Dictionary of db (filename::return time, inserted_text)
+        Dictionary of user insertions and deletions (filename::return time, inserted_text)
     """
     many_file_pulses = {}
     current_timeline = []
@@ -231,7 +258,7 @@ def all_pulses(general_pulse):
     Parameters
     ----------
     general_pulse : dictionary
-        Dictionary of timestamped and user action
+        Dictionary of user insertions and deletions
     Returns
     -------
     data_pulse
@@ -331,7 +358,7 @@ def large_insertion_check(general_pulse):
     Parameters
     ----------
     general_pulse : dictionary
-        Dictionary of user actions
+        Dictionary of user insertions and deletions
     Returns
     -------
     large_insertions
@@ -349,9 +376,8 @@ def large_insertion_check(general_pulse):
     except ZeroDivisionError:
         average = 0
     for element in general_pulse:
-        if (len(str(general_pulse[element]).replace("////", "").replace(" ", "")) > average * 8 and \
-            len(general_pulse[element].replace("////", "").replace(" ", "")) > 40) \
-                or len(general_pulse[element]) > 400:
+        insertion_size = len(remove_char_from_string(str(general_pulse[element]), [" ", "////"]))
+        if (insertion_size > average * 8 and insertion_size > 40) or len(general_pulse[element]) > 400:
             large_insertions[element] = str(general_pulse[element]).replace("\n", "<br/>").replace("////", "")
 
     if len(large_insertions) > 0:
@@ -408,15 +434,13 @@ def time_spent(timeline_list):
             "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
 
 
-def deletions_insertions(cursor, file_names) -> (int, int):
+def deletions_insertions(the_pulse) -> (int, int):
     """Gets the number of deletions and insertions of filez
 
     Parameters
     ----------
-    cursor : cursor
+    the_pulse : dict
         The current db cursor object
-    file_names : list
-        Names of the files to look through
     Returns
     -------
     deletions
@@ -426,21 +450,23 @@ def deletions_insertions(cursor, file_names) -> (int, int):
     """
     deletions_list = []
     insertions_list = []
-    deletions = 0
-    insertions = 0
-    for file_name in file_names:
-        document_id = document_info(cursor, file_name, "id")
-        cursor.execute("SELECT operation FROM Revisions WHERE document_id = " + str(document_id))
-        operation_array = cursor.fetchall()
+    # print(the_pulse)
+    for operation in the_pulse:
+        operation_string = the_pulse[operation]
+        # print(operation_string)
+        # if operation_string != "b'[]'":
+        #     if operation_string.count('","d') > 0:
+        #         deletions_list.append(1)
+        #     else:
+        #         deletions_list.append(0)
+        #
+        #     if operation_string.count('","i') > 0:
+        #         insertions_list.append(1)
+        #     else:
+        #         insertions_list.append(0)
 
-        for operation in operation_array:
-            operation_string = str(operation[0])
-            if operation_string.count(',"d') > 0:
-                deletions_list.append(1)
-            if operation_string.count(',"i') > 0:
-                insertions_list.append(1)
-                deletions = deletions.sum
-                insertions = insertions.sum
+    deletions = sum(deletions_list)
+    insertions = sum(insertions_list)
     return deletions, insertions, deletions_list, insertions_list
 
 
@@ -484,7 +510,7 @@ def all_data(db_file, file_namez):
     edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(cursor, file_namez)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_pulse)
     file_dat["Number of Deletion Chuncks*"] = deletions
     file_dat["Number of Insertion Chuncks*"] = insertions
 
@@ -504,8 +530,15 @@ def test():
     files_list = all_files(cursor)
     # print(files_list)
     time_list, the_pulse = gather_many(cursor, files_list)
-    # print(time_list)
-    output = all_pulses(the_pulse)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_pulse)
+
+    print(len(deletions_list), len(insertions_list), len(time_list), len(the_pulse))
+    # fig = plt.figure()
+    # ax = plt.subplot(111)
+    # ax.plot(time_list, deletions_list, label='Deletions Over Time')
+    # plt.title('Legend inside')
+    # ax.legend()
+    # plt.show()
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)

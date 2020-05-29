@@ -196,7 +196,6 @@ def gather(cursor, file_name):
     """
     document_id = document_info(cursor, file_name, "id")
     general_pulse = {}
-    current_timeline = []
 
     cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
     operation_array = cursor.fetchall()
@@ -217,15 +216,14 @@ def gather(cursor, file_name):
                     if element[:1] == "d":
                         block_deletions += str(element[1:])
             the_timestamp = datetime.datetime.strptime(text[len(text) - 1], '%Y-%m-%d %H:%M:%S')
-            while file_name + "::" + str(the_timestamp) in general_pulse:
+            while the_timestamp in general_pulse:
                 the_timestamp += datetime.timedelta(seconds=1)
 
-            general_pulse[file_name + "::" + str(the_timestamp)] = \
+            general_pulse[the_timestamp] = \
                 [str(block_insertions).replace("\\\\n", "").replace("////", ""),
-                 block_deletions.replace("\\\\n", "").replace("////", "")]
-            current_timeline.append(the_timestamp)
+                 block_deletions.replace("\\\\n", "").replace("////", ""), file_name]
     # (filename::return time, inserted_text) -> dictionary
-    return current_timeline, general_pulse
+    return general_pulse
 
 
 def gather_many(cursor, files):
@@ -243,13 +241,14 @@ def gather_many(cursor, files):
         Dictionary of user insertions and deletions (filename::return time, inserted_text)
     """
     many_file_pulses = {}
-    current_timeline = []
     for file_name in files:
-        times_only, gathered = gather(cursor, file_name)
+        gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
-        current_timeline += times_only
 
-    return current_timeline, many_file_pulses
+    # many_file_pulses = sorted(many_file_pulses)
+    the_timeline = list(many_file_pulses.keys())
+    the_timeline.sort()
+    return the_timeline, many_file_pulses
 
 
 def all_pulses(general_pulse):
@@ -367,18 +366,20 @@ def large_insertion_check(general_pulse):
     large_insertions = {}
     average = 0
     for element in general_pulse:
-        # print(general_pulse[element])
+        print(general_pulse[element][0][1:])
 
-        average += len(general_pulse[element])
+        average += len(general_pulse[element][0][1:])
 
     try:
         average = average / len(general_pulse)
     except ZeroDivisionError:
         average = 0
     for element in general_pulse:
-        insertion_size = len(remove_char_from_string(str(general_pulse[element]), [" ", "////"]))
+        insertion_size = len(remove_char_from_string(str(general_pulse[element][0][1:]), [" ", "///"]))
         if (insertion_size > average * 8 and insertion_size > 40) or len(general_pulse[element]) > 400:
-            large_insertions[element] = str(general_pulse[element]).replace("\n", "<br/>").replace("////", "")
+            large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]).replace("\n",
+                                                                                                     "<br/>").replace(
+                "////", "")
 
     if len(large_insertions) > 0:
         return large_insertions
@@ -434,13 +435,15 @@ def time_spent(timeline_list):
             "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
 
 
-def deletions_insertions(the_pulse) -> (int, int):
+def deletions_insertions(the_timeline, the_pulse) -> (int, int):
     """Gets the number of deletions and insertions of filez
 
     Parameters
     ----------
     the_pulse : dict
         The current db cursor object
+    the_timeline : list
+        sorted by date timeline of the_pulse keys
     Returns
     -------
     deletions
@@ -448,25 +451,28 @@ def deletions_insertions(the_pulse) -> (int, int):
     insertions
         The number of insertions of the filez provided
     """
+    deletions = 0
+    insertions = 0
     deletions_list = []
     insertions_list = []
     # print(the_pulse)
-    for operation in the_pulse:
-        operation_string = the_pulse[operation]
+    for operation_string in the_timeline:
+        # print(operation_string[0])
         # print(operation_string)
-        # if operation_string != "b'[]'":
-        #     if operation_string.count('","d') > 0:
-        #         deletions_list.append(1)
-        #     else:
-        #         deletions_list.append(0)
-        #
-        #     if operation_string.count('","i') > 0:
-        #         insertions_list.append(1)
-        #     else:
-        #         insertions_list.append(0)
+        if len(the_pulse[operation_string][0]) > 1:
+            insertions += 1
+            insertions_list.append(insertions)
+        else:
+            insertions_list.append(insertions)
 
-    deletions = sum(deletions_list)
-    insertions = sum(insertions_list)
+        if len(the_pulse[operation_string][1]) > 1:
+            deletions += 1
+            deletions_list.append(deletions)
+        else:
+            deletions_list.append(deletions)
+
+    # print(insertions)
+
     return deletions, insertions, deletions_list, insertions_list
 
 
@@ -498,8 +504,8 @@ def all_data(db_file, file_namez):
         names = names + "  " + name
     file_dat["File Name(s)"] = names
 
-    time_list, the_pulse = gather_many(cursor, file_namez)
-    time_data = time_spent(time_list)
+    the_pulse = gather_many(cursor, file_namez)
+    time_data = time_spent(list(the_pulse.keys()))
     file_dat = {**file_dat, **time_data}
 
     # Make sure sorted by date
@@ -511,8 +517,8 @@ def all_data(db_file, file_namez):
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_pulse)
-    file_dat["Number of Deletion Chuncks*"] = deletions
-    file_dat["Number of Insertion Chuncks*"] = insertions
+    file_dat["Number of Deletion Chunks*"] = deletions
+    file_dat["Number of Insertion Chunks*"] = insertions
 
     file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
@@ -529,16 +535,15 @@ def test():
     cursor = clean_up(cursor)
     files_list = all_files(cursor)
     # print(files_list)
-    time_list, the_pulse = gather_many(cursor, files_list)
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_pulse)
-
-    print(len(deletions_list), len(insertions_list), len(time_list), len(the_pulse))
-    # fig = plt.figure()
-    # ax = plt.subplot(111)
-    # ax.plot(time_list, deletions_list, label='Deletions Over Time')
-    # plt.title('Legend inside')
-    # ax.legend()
-    # plt.show()
+    the_timeline, the_pulse = gather_many(cursor, files_list)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
+    print(len(deletions_list), len(insertions_list), len(the_pulse))
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
+    plt.title('Insertions Over Time')
+    ax.legend()
+    plt.show()
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)

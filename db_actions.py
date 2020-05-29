@@ -14,9 +14,6 @@ def remove_char_from_string(the_string, the_characters):
     return the_string
 
 
-# ----------------------------------------Database Management
-
-
 def db_string_to_array(the_string):
     """Cleans db strings of leftover byte characters
 
@@ -46,6 +43,68 @@ def db_string_to_array(the_string):
         return the_string
 
     return test_list
+
+
+# Zoom levels
+zoom_options = {"day": datetime.timedelta(days=1), "hour": datetime.timedelta(hours=1),
+                "minute": datetime.timedelta(minutes=1)}
+
+
+def time_graph_granularity(time_list, items_list, zoom_level):
+    """Change the granularity of a user actions over time
+
+    Parameters
+    ----------
+    time_list : list
+        List of times in chronological order
+    items_list : list
+        The list to pair down
+    zoom_level : string
+        The interval size between events
+
+    Returns
+    -------
+    new_time_list
+        New shorter times list in chronological order
+    new_item_list
+        New list of user actions on less granular timeline
+    """
+
+    new_time_list = []
+    new_item_list = []
+
+    current_max_time = None
+    temp_sum = 0
+    index = 0
+    last_value = None
+
+    for the_time in time_list:
+        if current_max_time is None:
+            current_max_time = the_time + zoom_options[zoom_level]
+
+        if current_max_time > the_time:
+            temp_sum += items_list[index]
+        else:
+            new_time_list.append(current_max_time)
+            new_item_list.append(temp_sum)
+            temp_sum = 0
+            current_max_time = the_time + zoom_options[zoom_level]
+
+        index += 1
+
+    return new_time_list, new_item_list
+
+
+def cumulative_list(the_list):
+    new_list = []
+    current_sum = 0
+    for i in the_list:
+        current_sum += i
+        new_list.append(current_sum)
+    return new_list
+
+
+# ----------------------------------------Database Management
 
 
 def set_cursor(filename):
@@ -461,15 +520,15 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
         # print(operation_string)
         if len(the_pulse[operation_string][0]) > 1:
             insertions += 1
-            insertions_list.append(insertions)
+            insertions_list.append(1)
         else:
-            insertions_list.append(insertions)
+            insertions_list.append(0)
 
         if len(the_pulse[operation_string][1]) > 1:
             deletions += 1
-            deletions_list.append(deletions)
+            deletions_list.append(1)
         else:
-            deletions_list.append(deletions)
+            deletions_list.append(0)
 
     # print(insertions)
 
@@ -538,10 +597,13 @@ def test():
 
     the_timeline, the_pulse = gather_many(cursor, files_list)
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    # print(len(deletions_list), len(insertions_list), len(the_pulse))
+    print(len(deletions_list), len(insertions_list), len(the_timeline))
+    new_timeline, new_deletions_list = time_graph_granularity(the_timeline, deletions_list, "day")
+    print(len(new_deletions_list), len(insertions_list), len(new_timeline))
+
     fig = plt.figure()
     ax = plt.subplot(111)
-    ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
+    ax.plot(new_timeline, cumulative_list(new_deletions_list), label='Insertions Over Time')
     plt.title('Insertions Over Time')
     ax.legend()
     plt.show()

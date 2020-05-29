@@ -366,7 +366,7 @@ def large_insertion_check(general_pulse):
     large_insertions = {}
     average = 0
     for element in general_pulse:
-        print(general_pulse[element][0][1:])
+        # print(general_pulse[element][0][1:])
 
         average += len(general_pulse[element][0][1:])
 
@@ -504,8 +504,8 @@ def all_data(db_file, file_namez):
         names = names + "  " + name
     file_dat["File Name(s)"] = names
 
-    the_pulse = gather_many(cursor, file_namez)
-    time_data = time_spent(list(the_pulse.keys()))
+    the_timeline, the_pulse = gather_many(cursor, file_namez)
+    time_data = time_spent(the_timeline)
     file_dat = {**file_dat, **time_data}
 
     # Make sure sorted by date
@@ -516,7 +516,7 @@ def all_data(db_file, file_namez):
     edit_datez = documentz_info(cursor, file_namez, "updated_at")
     file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_pulse)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
     file_dat["Number of Deletion Chunks*"] = deletions
     file_dat["Number of Insertion Chunks*"] = insertions
 
@@ -535,15 +535,16 @@ def test():
     cursor = clean_up(cursor)
     files_list = all_files(cursor)
     # print(files_list)
-    the_timeline, the_pulse = gather_many(cursor, files_list)
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    print(len(deletions_list), len(insertions_list), len(the_pulse))
-    fig = plt.figure()
-    ax = plt.subplot(111)
-    ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
-    plt.title('Insertions Over Time')
-    ax.legend()
-    plt.show()
+
+    # the_timeline, the_pulse = gather_many(cursor, files_list)
+    # deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
+    # print(len(deletions_list), len(insertions_list), len(the_pulse))
+    # fig = plt.figure()
+    # ax = plt.subplot(111)
+    # ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
+    # plt.title('Insertions Over Time')
+    # ax.legend()
+    # plt.show()
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)
@@ -557,5 +558,4 @@ def test():
 
     return 0
 
-
-test()
+# test()

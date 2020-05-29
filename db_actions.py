@@ -536,15 +536,15 @@ def test():
     files_list = all_files(cursor)
     # print(files_list)
 
-    # the_timeline, the_pulse = gather_many(cursor, files_list)
-    # deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
+    the_timeline, the_pulse = gather_many(cursor, files_list)
+    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
     # print(len(deletions_list), len(insertions_list), len(the_pulse))
-    # fig = plt.figure()
-    # ax = plt.subplot(111)
-    # ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
-    # plt.title('Insertions Over Time')
-    # ax.legend()
-    # plt.show()
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    ax.plot(the_timeline, insertions_list, label='Insertions Over Time')
+    plt.title('Insertions Over Time')
+    ax.legend()
+    plt.show()
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)
@@ -558,4 +558,5 @@ def test():
 
     return 0
 
-# test()
+
+test()

@@ -1,8 +1,5 @@
 import sqlite3
 import datetime
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
 
 print("Running")
 
@@ -604,12 +601,6 @@ def test():
     # new_timeline, new_list = time_graph_granularity(the_timeline[0], all_pulse_list, "day")
     # print(len(all_pulse_list), len(new_list), len(new_timeline))
 
-    fig = plt.figure()
-    ax = plt.subplot(111)
-    ax.plot(the_timeline, cumulative_list(all_pulse_list[3]), label='Insertions Over Time')
-    plt.title('Insertions Over Time')
-    ax.legend()
-    plt.show()
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)

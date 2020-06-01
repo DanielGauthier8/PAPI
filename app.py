@@ -76,6 +76,6 @@ def results():
 @app.route('/file_analysis')
 def file_analysis():
     file_dat = all_data(session['file_name'], session['chosen_files'])
-    print(file_dat)
+    # print(file_dat)
 
     return render_template('file_analysis.html', file_dat=file_dat)

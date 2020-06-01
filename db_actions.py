@@ -279,8 +279,8 @@ def gather(cursor, file_name):
                 the_timestamp += datetime.timedelta(seconds=1)
 
             general_pulse[the_timestamp] = \
-                [str(block_insertions).replace("\\\\n", "").replace("////", ""),
-                 block_deletions.replace("\\\\n", "").replace("////", ""), file_name]
+                [remove_char_from_string(str(block_insertions), ("\\\\n", "////", "\\\\n", "////", " \\ ", "\\t"))
+                    , file_name]
     # (filename::return time, inserted_text) -> dictionary
     return general_pulse
 
@@ -310,13 +310,15 @@ def gather_many(cursor, files):
     return the_timeline, many_file_pulses
 
 
-def all_pulses(general_pulse):
+def all_pulses(the_timeline, the_pulse):
     """Finds programming events in dictionary by converting key value pairs into parsable actions
 
     Parameters
     ----------
-    general_pulse : dictionary
-        Dictionary of user insertions and deletions
+    the_pulse : dict
+        The current db of user actions in a datetime keyed dictionary
+    the_timeline : list
+        sorted by date, timeline of the_pulse keys
     Returns
     -------
     data_pulse
@@ -330,18 +332,18 @@ def all_pulses(general_pulse):
     logic_list = []
     operation_list = []
     output_list = []
-    for element in general_pulse:
-        comments_list.append(general_pulse[element].count("//") +
-                             general_pulse[element].count("/*"))
+    for element in the_timeline:
+        comments_list.append(the_pulse[element][0].count("//") +
+                             the_pulse[element][0].count("/*"))
 
-        logic_list.append(general_pulse[element].count("if") +
-                          general_pulse[element].count("elif") + general_pulse[element].count("else"))
+        logic_list.append(the_pulse[element][0].count("if") +
+                          the_pulse[element][0].count("elif") + the_pulse[element][0].count("else"))
 
-        operation_list.append(general_pulse[element].count("=") + general_pulse[element].count("+=") +
-                              general_pulse[element].count("-=") + general_pulse[element].count("*") +
-                              general_pulse[element].count("*="))
+        operation_list.append(the_pulse[element][0].count("=") + the_pulse[element][0].count("+=") +
+                              the_pulse[element][0].count("-=") + the_pulse[element][0].count("*") +
+                              the_pulse[element][0].count("*="))
 
-        output_list.append(general_pulse[element].count("return") + general_pulse[element].count("cout"))
+        output_list.append(the_pulse[element][0].count("return") + the_pulse[element][0].count("cout"))
     data_pulse = [comments_list, logic_list, operation_list, output_list]
 
     return data_pulse
@@ -500,9 +502,9 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
     Parameters
     ----------
     the_pulse : dict
-        The current db cursor object
+        The current db of user actions in a datetime keyed dictionary
     the_timeline : list
-        sorted by date timeline of the_pulse keys
+        sorted by date, timeline of the_pulse keys
     Returns
     -------
     deletions
@@ -596,14 +598,15 @@ def test():
     # print(files_list)
 
     the_timeline, the_pulse = gather_many(cursor, files_list)
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    print(len(deletions_list), len(insertions_list), len(the_timeline))
-    new_timeline, new_deletions_list = time_graph_granularity(the_timeline, deletions_list, "day")
-    print(len(new_deletions_list), len(insertions_list), len(new_timeline))
+    all_pulse_list = all_pulses(the_timeline, the_pulse)
+
+    print(len(all_pulse_list), len(the_timeline))
+    # new_timeline, new_list = time_graph_granularity(the_timeline[0], all_pulse_list, "day")
+    # print(len(all_pulse_list), len(new_list), len(new_timeline))
 
     fig = plt.figure()
     ax = plt.subplot(111)
-    ax.plot(new_timeline, cumulative_list(new_deletions_list), label='Insertions Over Time')
+    ax.plot(the_timeline, cumulative_list(all_pulse_list[3]), label='Insertions Over Time')
     plt.title('Insertions Over Time')
     ax.legend()
     plt.show()
@@ -620,5 +623,4 @@ def test():
 
     return 0
 
-
-test()
+# test()

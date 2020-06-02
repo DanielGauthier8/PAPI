@@ -1,10 +1,10 @@
 import time
+import os
 
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
-from db_actions import set_cursor, clean_up, all_files, all_data
-import os
+from .db_actions import set_cursor, clean_up, all_files, all_data
 
 UPLOAD_FOLDER = './databases'
 ALLOWED_EXTENSIONS = {'db'}

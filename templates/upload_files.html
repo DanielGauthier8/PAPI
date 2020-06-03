@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<!--
+	Introspect by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>Generic - Introspect by TEMPLATED</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../static/assets/css/main.css" />
+	</head>
+	<body>
+
+		<!-- Header -->
+			<header id="header">
+				<div class="inner">
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
+					<nav id="nav">
+						<a href="{{ url_for('index') }}">Home</a>
+						<a href="generic.html">Generic</a>
+						<a href="elements.html">Elements</a>
+					</nav>
+				</div>
+			</header>
+			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
+
+		<!-- Main -->
+			<section id="main" >
+				<div class="inner">
+					<header class="major special">
+						<h1>Begin</h1>
+						<p>To begin the analysis process, please upload student work below. This needs to be the ".db" file from the CS50IDE environment.</p>
+					</header>
+					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+                    <form method=post enctype=multipart/form-data>
+                        <div class="field">
+							<label for="file">History File</label>
+							<input type=file name=file>
+						</div>
+
+                        <ul class="actions">
+                        <input type=submit value=Upload class="alt" >
+                        </ul>
+                    </form>
+                </div>
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<div class="inner">
+					<div class="copyright">
+						&copy; Untitled Design: <a href="https://templated.co/">TEMPLATED</a>. Images <a href="https://unsplash.com/">Unsplash</a>
+					</div>
+				</div>
+			</section>
+
+		<!-- Scripts -->
+			<script src="../static/assets/js/jquery.min.js"></script>
+			<script src="../static/assets/js/skel.min.js"></script>
+			<script src="../static/assets/js/util.js"></script>
+			<script src="../static/assets/js/main.js"></script>
+
+	</body>
+</html>
+

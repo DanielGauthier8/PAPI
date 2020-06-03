@@ -442,9 +442,8 @@ def large_insertion_check(general_pulse):
     for element in general_pulse:
         insertion_size = len(__remove_char_from_string(str(general_pulse[element][0][1:]), [" ", "///"]))
         if (insertion_size > average * 8 and insertion_size > 40) or len(general_pulse[element]) > 400:
-            large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]).replace("\n",
-                                                                                                 "<br/>").replace(
-            "////", "")
+            large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]).\
+                replace("\n","<br/>").replace("////", "").replace("\\", "")
 
     if len(large_insertions) > 0:
         return large_insertions

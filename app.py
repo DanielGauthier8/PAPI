@@ -4,7 +4,7 @@ import os
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
-from .db_actions import set_cursor, clean_up, all_files, all_data
+import db_actions
 
 UPLOAD_FOLDER = './databases'
 ALLOWED_EXTENSIONS = {'db'}
@@ -58,12 +58,12 @@ def upload_file():
 @app.route('/student_files', methods=['GET', 'POST'])
 def results():
     time.sleep(2)
-    cursor = set_cursor(session['file_name'])
-    cursor = clean_up(cursor)
+    cursor = db_actions.set_cursor(session['file_name'])
+    cursor = db_actions.clean_up(cursor)
 
     if "chosen_files" not in session:
         session['chosen_files'] = None
-    session['chosen_files'] = all_files(cursor)
+    session['chosen_files'] = db_actions.all_files(cursor)
 
     if request.method == 'POST':
         temp = request.form.getlist('chosen_files')
@@ -75,7 +75,15 @@ def results():
 
 @app.route('/file_analysis')
 def file_analysis():
-    file_dat = all_data(session['file_name'], session['chosen_files'])
-    # print(file_dat)
+    file_dat, graphs, the_timeline = db_actions.all_data(session['file_name'], session['chosen_files'])
 
-    return render_template('file_analysis.html', file_dat=file_dat)
+    # try_timeline = []
+    # o = 0
+    # for i in the_timeline:
+    #     try_timeline.append(str(o))
+    #     o += 1
+    #
+    # the_timeline = try_timeline
+    # print(the_timeline)
+
+    return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline)

@@ -90,7 +90,7 @@ def time_graph_granularity(time_list, items_list, zoom_level):
 
         if current_max_time > the_time:
             for list_index in range(0, len(items_list)):
-                new_item_list[list_index][len(new_item_list[list_index]) - 1] += items_list[list_index][index]
+                new_item_list[list_index][len(new_item_list[list_index])-1] += items_list[list_index][index]
         else:
             new_time_list.append(current_max_time)
             for count in range(0, len(items_list)):
@@ -283,7 +283,7 @@ def gather(cursor, file_name):
             general_pulse[the_timestamp] = \
                 [__remove_char_from_string(str(block_insertions), ("\\\\n", "\\\\n", "////", " \\ ", "\\t"))
                     , __remove_char_from_string(str(block_deletions), ("\\\\n", "\\\\n", "////", " \\ ", "\\t")),
-                 file_name]
+                                                file_name]
     # (filename::return time, inserted_text) -> dictionary
     return general_pulse
 
@@ -443,8 +443,8 @@ def large_insertion_check(general_pulse):
         insertion_size = len(__remove_char_from_string(str(general_pulse[element][0][1:]), [" ", "///"]))
         if (insertion_size > average * 8 and insertion_size > 40) or len(general_pulse[element]) > 400:
             large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]).replace("\n",
-                                                                                                     "<br/>").replace(
-                "////", "")
+                                                                                                 "<br/>").replace(
+            "////", "")
 
     if len(large_insertions) > 0:
         return large_insertions

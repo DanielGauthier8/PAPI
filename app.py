@@ -71,8 +71,8 @@ def upload_file():
 @app.route('/upload_files', methods=['GET', 'POST'])
 def upload_files():
     if request.method == 'POST':
-        if "file_name" not in session:
-            session['file_name'] = None
+        # if "file_name" not in session:
+        #     session['file_name'] = None
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
@@ -88,7 +88,7 @@ def upload_files():
             # print(file)
             token = secrets.token_urlsafe(16)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
-            session['file_name'] = token
+            # session['file_name'] = token
 
             return redirect(url_for('loading', token=token))
     return render_template('upload_file.html')
@@ -100,22 +100,22 @@ def results(token):
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor)
 
-    if "chosen_files" not in session:
-        session['chosen_files'] = None
-    session['chosen_files'] = db_actions.all_files(cursor)
+    if token not in session:
+        session[token] = None
+    session[token] = db_actions.all_files(cursor)
 
     if request.method == 'POST':
         temp = request.form.getlist('chosen_files')
         if "All Files" not in str(temp):
-            session['chosen_files'] = temp
+            session[token] = temp
         return redirect(url_for('file_analysis', token=token))
-    return render_template('student_info.html', files_list=session['chosen_files'])
+    return render_template('student_info.html', files_list=session[token])
 
 
 @app.route('/file_analysis/<token>')
 def file_analysis(token):
     file_dat, graphs, the_timeline = db_actions.all_data(os.path.join(app.config['UPLOAD_FOLDER'], token),
-                                                         session['chosen_files'])
+                                                         session[token])
 
     # try_timeline = []
     # o = 0

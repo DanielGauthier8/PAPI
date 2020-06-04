@@ -30,16 +30,15 @@
 
 		<!-- Main -->
 			<section id="main" >
-				<div class="inner">
+				<div class="inner"><a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
 					<header class="major special">
-						<h1>Begin</h1>
+						<h1>Begin: Multiple Student Mode</h1>
 						<p>To begin the analysis process, please upload student work below. This needs to be the ".db" file from the CS50IDE environment.</p>
 					</header>
-					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
                     <form method=post enctype=multipart/form-data>
                         <div class="field">
-							<label for="file">History File</label>
-							<input type=file name=file>
+							<label for="file">History File(s)</label>
+							<input type=file name="file[]" multiple>
 						</div>
 
                         <ul class="actions">

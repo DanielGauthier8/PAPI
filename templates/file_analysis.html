@@ -10,6 +10,10 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+		<script src="../static/assets/js/heatmap.js"></script>
 	</head>
 	<body>
 
@@ -77,7 +81,35 @@
 					{% endif %}
 
 
-					<section id="four" class="major special">
+					<script>var t = `{{ file_dat["File Timelime"]|safe }}`</script>
+					
+					
+
+					{% if file_dat["File Timelime"] != -1 %}
+					<section id="four" class="major speical">
+						<h2>Heatmap</h2>
+						<div>
+							<table id="heatmap">
+								<tr>
+									<td><b>Date</b></td>
+									<td><b>12am - 8am</b></td>
+									<td><b>8am - 4pm</b></td>
+									<td><b>4pm - 12am</b></td>
+								</tr>
+
+
+							</table>
+						</div>
+						<script>displayHeatMap([
+
+							...JSON.parse(t)
+							
+							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
+							;</script>
+					</section>
+					{% endif %}
+
+					<section id="five" class="major special">
 						<div class="content" style="text-align: center">
 							<h3>File Trends</h3>
 							<canvas id="myLine" width="100%"></canvas>

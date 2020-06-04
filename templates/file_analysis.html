@@ -10,17 +10,23 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+		<script src="../static/assets/js/heatmap.js"></script>
 	</head>
 	<body>
 
 		<!-- Header -->
 			<header id="header">
 				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">introspect</a>
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
-						<a href="generic.html">Generic</a>
-						<a href="elements.html">Elements</a>
+						<a href="{{ url_for('start') }}">Start</a>
+						<a href="{{ url_for('upload_file') }}">Single Student</a>
+						<a href="{{ url_for('upload_files') }}">Multiple Students</a>
+						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>
 			</header>
@@ -75,9 +81,39 @@
 					{% endif %}
 
 
-					<section id="four" class="major special">
+					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
+					
+					
+
+					{% if deletion_insertion_timeline != -1 %}
+					<section id="four" class="major speical">
+						<h2>Heatmap</h2>
+						<div>
+							<table id="heatmap">
+								<tr>
+									<td><b>Date</b></td>
+									<td><b>12am - 8am</b></td>
+									<td><b>8am - 4pm</b></td>
+									<td><b>4pm - 12am</b></td>
+								</tr>
+
+
+							</table>
+						</div>
+						<script>displayHeatMap([
+
+							...JSON.parse(t)
+							
+							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
+							;</script>
+					</section>
+					{% endif %}
+
+					<section id="five" class="major special">
 						<div class="content" style="text-align: center">
-<!--							<h3>File Trends</h3>-->
+							<h3>File Trends</h3>
+							<canvas id="myLine" width="100%"></canvas>
+
 
 
 						</div>
@@ -93,7 +129,7 @@
 					</header>
 
 					<div class="copyright">
-						&copy; Untitled Design: <a href="https://templated.co/">TEMPLATED</a>. Images <a href="https://unsplash.com/">Unsplash</a>
+						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
 					</div>
 				</div>
 			</section>
@@ -103,6 +139,70 @@
 			<script src="../static/assets/js/skel.min.js"></script>
 			<script src="../static/assets/js/util.js"></script>
 			<script src="../static/assets/js/main.js"></script>
+			<script src="../static/assets/js/Chart.min.js"></script>
+			<script src="../static/assets/js/moment.min.js"></script>
+
+		<script>
+			  let ctx = document.getElementById('myLine').getContext('2d');
+
+			  let myLine = new Chart(ctx, {
+			  type: 'line',
+			  data: {
+				labels: [
+						{% for item in the_timeline %}
+				   			"{{ item }}",
+			  			{% endfor %}
+				],
+				datasets: [
+					{
+				  label: 'Comments',
+				  data: [
+				  		{% for item in graphs[0] %}
+				   			"{{ item }}",
+						{% endfor %}
+				  ],
+				  backgroundColor: "rgba(153,255,51,0.4)"
+				},
+			  	{
+				  label: 'Logic',
+				  data: [
+				  		{% for item in graphs[1] %}
+				   			"{{ item }}",
+						{% endfor %}
+				  ],
+				  backgroundColor: "rgba(51,214,255,0.4)"
+				},
+			  	{
+				  label: 'Operation',
+				  data: [
+				  		{% for item in graphs[2] %}
+				   			"{{ item }}",
+						{% endfor %}
+				  ],
+				  backgroundColor: "rgba(71,51,255,0.4)"
+				},
+			  	{
+				  label: 'Output',
+				  data: [
+				  		{% for item in graphs[3] %}
+				   			"{{ item }}",
+						{% endfor %}
+				  ],
+				  backgroundColor: "rgba(255,75,51,0.4)"
+				}
+				]
+			  },
+			  options: {
+				scales: {
+					yAxes: [{
+						stacked: true
+					}]
+				}
+			}
+
+			});
+
+		</script>
 
 	</body>
 </html>

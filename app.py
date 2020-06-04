@@ -1,10 +1,12 @@
 import time
+import os
+import secrets
 
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
-from db_actions import set_cursor, clean_up, all_files, all_data
-import os
+import db_actions
+
 
 UPLOAD_FOLDER = './databases'
 ALLOWED_EXTENSIONS = {'db'}
@@ -25,9 +27,19 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/loading/<filename>')
-def loading(filename):
-    return render_template('loading.html')
+@app.route('/start')
+def start():
+    return render_template('start.html')
+
+
+@app.route('/learn_more')
+def learn_more():
+    return render_template('learn_more.html')
+
+
+@app.route('/loading/<token>')
+def loading(token):
+    return render_template('loading.html', token=token)
 
 
 @app.route('/upload_file', methods=['GET', 'POST'])
@@ -48,34 +60,71 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             # print(file)
+            token = secrets.token_urlsafe(16)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
+            session['file_name'] = token
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            session['file_name'] = UPLOAD_FOLDER + "/" + filename
-            return redirect(url_for('loading', filename=filename))
+            return redirect(url_for('loading', token=token))
     return render_template('upload_file.html')
 
 
-@app.route('/student_files', methods=['GET', 'POST'])
-def results():
-    time.sleep(2)
-    cursor = set_cursor(session['file_name'])
-    cursor = clean_up(cursor)
+@app.route('/upload_files', methods=['GET', 'POST'])
+def upload_files():
+    if request.method == 'POST':
+        # if "file_name" not in session:
+        #     session['file_name'] = None
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            # print(file)
+            token = secrets.token_urlsafe(16)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
+            # session['file_name'] = token
 
-    if "chosen_files" not in session:
-        session['chosen_files'] = None
-    session['chosen_files'] = all_files(cursor)
+            return redirect(url_for('loading', token=token))
+    return render_template('upload_file.html')
+
+
+@app.route('/student_files/<token>', methods=['GET', 'POST'])
+def results(token):
+    time.sleep(2)
+    cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
+    cursor = db_actions.clean_up(cursor)
+
+    if token not in session:
+        session[token] = None
+    session[token] = db_actions.all_files(cursor)
 
     if request.method == 'POST':
         temp = request.form.getlist('chosen_files')
         if "All Files" not in str(temp):
-            session['chosen_files'] = temp
-        return redirect(url_for('file_analysis'))
-    return render_template('student_info.html', files_list=session['chosen_files'])
+            session[token] = temp
+        return redirect(url_for('file_analysis', token=token))
+    return render_template('student_info.html', files_list=session[token])
 
 
-@app.route('/file_analysis')
-def file_analysis():
-    file_dat = all_data(session['file_name'], session['chosen_files'])
-    print(file_dat)
+@app.route('/file_analysis/<token>')
+def file_analysis(token):
+    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data(os.path.join(app.config['UPLOAD_FOLDER'], token),
+                                                         session[token])
 
-    return render_template('file_analysis.html', file_dat=file_dat)
+    # try_timeline = []
+    # o = 0
+    # for i in the_timeline:
+    #     try_timeline.append(str(o))
+    #     o += 1
+    #
+    # the_timeline = try_timeline
+    # print(the_timeline)
+
+    return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
+                           deletion_insertion_timeline= deletion_insertion_timeline)

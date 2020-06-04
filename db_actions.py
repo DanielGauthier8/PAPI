@@ -611,18 +611,6 @@ def all_data(db_file, file_namez):
     graphs = all_pulses(the_timeline, the_pulse)
 
     the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-
-    # Make sure sorted by date
-    creation_datez = documentz_info(cursor, file_namez, "created_at")
-    file_dat["First File Creation Date"] = creation_datez[0]
-    file_dat["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
-    # TODO: file_dat["Number of Saves"] = sum(documentz_info(cursor, file_namez, "saves"))
-    edit_datez = documentz_info(cursor, file_namez, "updated_at")
-    file_dat["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
-
-    deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    file_dat["Number of Deletion Chunks*"] = deletions
-    file_dat["Number of Insertion Chunks*"] = insertions
     
     fileHistory = "["
     for i in the_pulse:
@@ -630,10 +618,6 @@ def all_data(db_file, file_namez):
         fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
     fileHistory = fileHistory[:-1] + "]"
     
-    file_dat["File Timelime"] = fileHistory
+    deletion_insertion_timeline = fileHistory
 
-    file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
-
-    file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
-
-    return file_dat, graphs, the_timeline
+    return file_dat, graphs, the_timeline, deletion_insertion_timeline

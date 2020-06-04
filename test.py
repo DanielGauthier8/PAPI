@@ -20,8 +20,8 @@ def test():
     # print(large_insertion_check(the_pulse))
     # doc_file = documentz_info(cursor, files_list, "save_points")
     # print(doc_file)
-    # deletions, insertions = deletions_insertions(cursor, files_list)
-    # print(str(deletions) + " " + str(insertions))
+    deletions, insertions, deletions_list, insertions_list = db_actions.deletions_insertions(the_timeline, the_pulse)
+    print(str(deletions) + " " + str(insertions), deletions_list, insertions_list)
 
 
     #

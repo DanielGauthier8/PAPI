@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>History Lookup</title>
+		<title>PAPI Home</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
@@ -27,28 +27,33 @@
 				</div>
 			</header>
 			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
-
-		<!-- Main -->
-			<section id="main" >
+		<!-- Two -->
+			<section id="two">
 				<div class="inner">
-					<header class="major special">
-						<h1>Files</h1>
-					</header>
-					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
-
-
-					<form method="post" action="#">
-						<input type="checkbox" id="select_all_files" name="chosen_files" value="All Files">
-						<label for="select_all_files">All Files</label>
-						<br/><br/>
-						{% for each in files_list %}
-						<input type="checkbox" id="id_{{each}}" name="chosen_files" value="{{each}}">
-						<label for="id_{{each}}">{{each}}</label>
-
-						{% endfor %}
-						<br/>
-						<input type="submit" value="Submit">
-					</form>
+					<article>
+						<div class="content">
+							<header>
+								<h3>One Student</h3>
+							</header>
+							<div class="image lit">
+								<img src="../static/images/code-1243504-1280x960.jpg" alt="" />
+							</div>
+							<p>Analyze student work at a per student basis. Requires the upload of a single database. Select the assignments to be looked over.</p>
+							<a href="{{ url_for('upload_file') }}" class="button alt">Start</a>
+						</div>
+					</article>
+					<article class="alt">
+						<div class="content">
+							<header>
+								<h3>Many Students</h3>
+							</header>
+							<div class="image lit">
+								<img src="../static/images/lots-of-files-2-1236472-1280x960.jpg" alt="" />
+							</div>
+							<p>Upload many student databases at once to analyze the overall trend of a class over time. All assignments are automatically selected. Date range choices can be applied.</p>
+							<a href="{{ url_for('upload_files') }}" class="button alt">Start</a>
+						</div>
+					</article>
 				</div>
 			</section>
 
@@ -68,4 +73,3 @@
 			<script src="../static/assets/js/main.js"></script>
 
 	</body>
-</html>

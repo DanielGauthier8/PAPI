@@ -580,13 +580,18 @@ def all_data(db_file, file_namez):
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
     file_dat["Number of Deletion Chunks*"] = deletions
     file_dat["Number of Insertion Chunks*"] = insertions
-    file_dat["File Timelime"] = the_pulse
+    
+    fileHistory = "["
+    for i in the_pulse:
+        fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+        fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
+    fileHistory = fileHistory[:-1] + "]"
+    
+    file_dat["File Timelime"] = fileHistory
 
     file_dat["Number of Comments*"] = comment_count(documentz_info(cursor, file_namez, "file_contents"))
 
     file_dat["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
-    
-    print(the_timeline)
 
     return file_dat
 

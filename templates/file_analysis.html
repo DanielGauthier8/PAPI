@@ -79,7 +79,9 @@
 					{% endif %}
 
 
-					<script>displayHeatMap(JSON.parse(`{{ file_dat["File Timelime"]|safe }}`));</script>
+					<script>var t = `{{ file_dat["File Timelime"]|safe }}`</script>
+					
+					
 
 					{% if file_dat["File Timelime"] != -1 %}
 					<section id="four" class="major speical">
@@ -88,18 +90,20 @@
 							<table id="heatmap">
 								<tr>
 									<td><b>Date</b></td>
-									<td><b>Insertions</b></td>
-									<td><b>Deletetions</b></td>
+									<td><b>12am - 8am</b></td>
+									<td><b>8am - 4pm</b></td>
+									<td><b>4pm - 12am</b></td>
 								</tr>
 
 
 							</table>
 						</div>
 						<script>displayHeatMap([
-							{time: moment(), i: 5, d: 2},
-							{time: moment().add(5, 'days'), i: 1, d: 1},
+
+							...JSON.parse(t)
 							
-							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}');</script>
+							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
+							;</script>
 					</section>
 					{% endif %}
 

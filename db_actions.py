@@ -621,3 +621,4 @@ def all_data(db_file, file_namez):
     deletion_insertion_timeline = fileHistory
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
+

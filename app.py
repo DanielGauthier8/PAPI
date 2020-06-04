@@ -116,15 +116,5 @@ def results(token):
 def file_analysis(token):
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data(os.path.join(app.config['UPLOAD_FOLDER'], token),
                                                          session[token])
-
-    # try_timeline = []
-    # o = 0
-    # for i in the_timeline:
-    #     try_timeline.append(str(o))
-    #     o += 1
-    #
-    # the_timeline = try_timeline
-    # print(the_timeline)
-
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
                            deletion_insertion_timeline= deletion_insertion_timeline)

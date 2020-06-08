@@ -28,6 +28,7 @@ SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
 
 drop_zone = Dropzone(app)
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -36,6 +37,12 @@ def allowed_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('404.html'), 404
 
 
 @app.route('/start')
@@ -77,7 +84,7 @@ def upload_file():
     return render_template('upload_file.html')
 
 
-@app.route('/upload_files', methods=['GET', 'POST'])
+@app.route('/upload_file_many', methods=['GET', 'POST'])
 def upload_files():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -90,10 +97,11 @@ def upload_files():
                 # print(filename)
                 token = secrets.token_urlsafe(16)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
-                files_list.append(token)
-
-        return redirect(url_for('loading', token=files_list))
-    return render_template('upload_files.html')
+                files_list.append(os.path.join(app.config['UPLOAD_FOLDER'], token))
+        session[token] = files_list
+        print(files_list)
+        return redirect(url_for('file_analysis_many', token=token))
+    return render_template('upload_file_many.html')
 
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
@@ -123,9 +131,10 @@ def file_analysis(token):
                            deletion_insertion_timeline= deletion_insertion_timeline)
 
 
-# def multiple_file_analysis(token, db_base_files):
-#     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
-#         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
-#
-#     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
-#                            deletion_insertion_timeline= deletion_insertion_timeline)
+@app.route('/file_analysis_many/<token>')
+def file_analysis_many(token):
+    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
+        multiple_database_get_data(session[token])
+
+    return render_template('file_analysis_many.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
+                           deletion_insertion_timeline= deletion_insertion_timeline)

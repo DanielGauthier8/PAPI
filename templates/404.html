@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Generic - Introspect by TEMPLATED</title>
+		<title>Page Not Found: 404</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
@@ -20,33 +20,22 @@
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
 						<a href="{{ url_for('start') }}">Start</a>
-						<a href="{{ url_for('upload_file') }}">Single Student</a>
-						<a href="{{ url_for('upload_files') }}">Multiple Students</a>
+						<a href="{{ url_for('upload_file') }}">Student Mode</a>
+						<a href="{{ url_for('upload_files') }}">Class Mode</a>
 						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>
 			</header>
 			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
-
-		<!-- Main -->
-			<section id="main" >
+            <section id="main" >
 				<div class="inner"><a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
 					<header class="major special">
-						<h1>Begin: Multiple Student Mode</h1>
-						<p>To begin the analysis process, please upload student work below. This needs to be the ".db" file from the CS50IDE environment.</p>
+						<h1>Page Not Found: 404</h1>
+                        <p>We're sorry, what you were looking for is just not there.</p>
+                        <p><a href="{{ url_for('index') }}"  class="button alt">Get Back Home</a>
 					</header>
-                    <form method=post enctype=multipart/form-data>
-                        <div class="field">
-							<label for="file">History File(s)</label>
-							<input type=file name="file[]" multiple>
-						</div>
-
-                        <ul class="actions">
-                        <input type=submit value=Upload class="alt" >
-                        </ul>
-                    </form>
                 </div>
-			</section>
+            </section>
 
 		<!-- Footer -->
 			<section id="footer">
@@ -64,5 +53,3 @@
 			<script src="../static/assets/js/main.js"></script>
 
 	</body>
-</html>
-

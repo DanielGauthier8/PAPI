@@ -51,35 +51,13 @@
 							<table>
                                     {% for key, value in file_dat.items() %}
 								<tr>
-									{% if key != "Large Text Insertion Detection*"%}
 									<th> {{ key }}</th>
 									<td> {{ value }}</td>
-									{% endif %}
-									{% if key == "Large Text Insertion Detection*" and value == -1 %}
-									<th> Large Text Insertion Detection*</th>
-									<td> False</td>
-									{% endif %}
 								</tr>
 								{% endfor %}
 							</table>
 						</div>
 					</section>
-					{% if file_dat["Large Text Insertion Detection*"] != -1 %}
-					<section id="three" class="major special">
-						<div class="content" style="text-align: center">
-							<h2>Large Text Insertion(s)</h2>
-							<table>
-								{% for key, value in file_dat["Large Text Insertion Detection*"].items() %}
-								<tr>
-									<th> {{ key }}</th>
-									<td><p> {{ value }}</p></td>
-								<tr>
-									{% endfor %}
-							</table>
-						</div>
-					</section>
-					{% endif %}
-
 
 					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
 					

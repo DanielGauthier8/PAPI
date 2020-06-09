@@ -647,21 +647,29 @@ def multiple_database_get_data (db_filename_list):
 
         """
 
-    file_dat = {"File Name(s)": "", "Number of Deletion Chunks*": 0, "Number of Insertion Chunks*": 0,}
-    graphs = []
-    the_timeline = []
+    list_of_pulses = []
     deletion_insertion_timeline = {}
 
     for db_file in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor)
+        the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
+        list_of_pulses.append(the_pulse)
 
-        new_file_dat, new_graphs, new_the_timeline, new_deletion_insertion_timeline = all_data(db_file, all_files(cursor))
+    many_student_pulse = list_of_pulses.pop(0)
 
-        # TODO: file_dat["Number of Saves"] += new_file_dat["Number of Saves"]
+    for student_db_file in list_of_pulses:
+        for action in student_db_file:
+            try:
+                temp = many_student_pulse[action]
+                many_student_pulse[action] = [temp[0] + student_db_file[action][0][:1], temp[1] + student_db_file[action][1][:1], temp[2] + "  " + student_db_file[action][2]]
+            except KeyError:
+                many_student_pulse[action] = student_db_file[action]
 
-        the_timeline += new_deletion_insertion_timeline
-
-    the_timeline = list(set(the_timeline))
+    the_timeline = list(many_student_pulse.keys())
     the_timeline.sort()
-    return file_dat, graphs, the_timeline, deletion_insertion_timeline
+    graphs = all_pulses(the_timeline, many_student_pulse)
+    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "day")
+
+
+    return graphs, the_timeline, deletion_insertion_timeline

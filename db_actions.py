@@ -583,8 +583,13 @@ def all_data(db_file, file_namez):
     
     fileHistory = "["
     for i in the_pulse:
-        fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-        fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
+        if(len(the_pulse[i][0]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
+        if(len(the_pulse[i][1]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + the_pulse[i][1][:1] + "\"},"
+
     fileHistory = fileHistory[:-1] + "]"
     
     file_dat["File Timelime"] = fileHistory

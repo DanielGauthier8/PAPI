@@ -43,17 +43,23 @@ const displayHeatMap = (input, inserts, deletes) => {
     console.log(dates)
 
     inserts = parseInt(inserts);
-    deletes = parseInt(deletes)
+    deletes = parseInt(deletes);
+    operations = inserts + deletes;
 
-    var table = "";
+    let table = "";
     Object.keys(dates).forEach(key => {
-        console.log(dates[key])
-        table += "<tr><td>" + dates[key][99].format("MM/DD/YYYY") + "</td>"
-        for(var i = 0; i < 3; i++){
-            table += dates[key][i] === undefined ? 
-                "<td></td>" : "<td style=\"color: white; background: linear-gradient(90deg, rgb(" + cellColor(dates[key][i].i, [1, 0, 1])+ ") 0%, rgb(" + cellColor(dates[key][i].i, [0, 1, 1])+ ") " + Math.floor(((dates[key][i].i - dates[key][i].d) / ((dates[key][i].i + dates[key][i].d) / 2)) * 100) + "%)\">inserts: " + dates[key][i].i + " / deletes:" + dates[key][i].d + "</td>";
+        let dayOpertations = 0;
+        let tableAppend = "";
+        for(let i = 0; i < 3; i++){
+            dates[key][i] === undefined ? stats = "" : stats = "<div style=\"display: flex; flex-flow: space-between; \"><div style=\"margin: auto;\">" + dates[key][i].i + " inserts </div><div style=\"margin: auto;\">" + dates[key][i].d + " deletes</div>"
+            dates[key][i] !== undefined ? dayOpertations += dates[key][i].i + dates[key][i].d : dayOpertations += 0;
+            tableAppend += dates[key][i] === undefined ? 
+                "<td></td>" : "<td style=\"margin: auto; color: white; background: linear-gradient(90deg, rgb(" + cellColor(dates[key][i].i, [1, 0, 1])+ ") 0%, rgb(" + cellColor(dates[key][i].d, [0, 1, 1])+ ") " + Math.floor(((dates[key][i].i - dates[key][i].d) / ((dates[key][i].i + dates[key][i].d) / 2)) * 100) + "%)\">" + stats + "</td>";
         }
 
+        table += "<tr><td style=\"padding: 0;\">" + dates[key][99].format("MM/DD/YYYY") +  
+            '<div style="width:' + Math.floor((dayOpertations / operations) * 100) + '%; background-color: orange; padding: 0; margin: 0; height: 8px;"></div></td>'
+        table += tableAppend + "</tr>";
     })
 
     $("#heatmap").append(table);

@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import datetime
 
@@ -547,7 +548,7 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
 
 # ----------------------------------------Website Actions
 def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
-    """Gets the number of deletions and insertions of filez
+    """Calls all required helper functions to get non-graphical metadata
 
     Parameters
     ----------
@@ -579,7 +580,7 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
 
 
 def all_data(db_file, file_namez):
-    """Calls all required helper functions to get all non-graphic metadata
+    """Calls all required helper functions to get all metadata
 
     Parameters
     ----------
@@ -590,7 +591,11 @@ def all_data(db_file, file_namez):
     Returns
     -------
     file_dat
-        Dictionary of all metadata retrieved
+        Dictionary of all basic metadata retrieved
+    graphs
+            List of lists of different programming actions
+    the_timeline: list
+        Chronolical list of all dates
     """
     # Returns all file metadata
     cursor = set_cursor(db_file)
@@ -627,3 +632,48 @@ def all_data(db_file, file_namez):
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
+def multiple_database_get_data (db_filename_list):
+    """Calls all required helper functions to get all metadata for class mode, multi-student analysis
+
+        Parameters
+        ----------
+        db_filename_list : list
+            Names of the database files to look through
+        Returns
+        -------
+        graphs
+            List of lists of different programming actions
+        the_timeline: list
+            Chronological list of all dates
+        file_dat: dict
+            Summary of metadata trends across student files
+        deletion_insertion_timeline:
+
+        """
+
+    list_of_pulses = []
+    deletion_insertion_timeline = {}
+
+    for db_file in db_filename_list:
+        cursor = set_cursor(db_file)
+        cursor = clean_up(cursor)
+        the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
+        list_of_pulses.append(the_pulse)
+
+    many_student_pulse = list_of_pulses.pop(0)
+
+    for student_db_file in list_of_pulses:
+        for action in student_db_file:
+            try:
+                temp = many_student_pulse[action]
+                many_student_pulse[action] = [temp[0] + student_db_file[action][0][:1], temp[1] + student_db_file[action][1][:1], temp[2] + "  " + student_db_file[action][2]]
+            except KeyError:
+                many_student_pulse[action] = student_db_file[action]
+
+    the_timeline = list(many_student_pulse.keys())
+    the_timeline.sort()
+    graphs = all_pulses(the_timeline, many_student_pulse)
+    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "day")
+
+
+    return graphs, the_timeline, deletion_insertion_timeline

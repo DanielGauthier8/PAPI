@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Start</title>
+		<title>Class File Upload</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
@@ -27,34 +27,25 @@
 				</div>
 			</header>
 			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
-		<!-- Two -->
-			<section id="two">
-				<div class="inner">
-					<article>
-						<div class="content">
-							<header>
-								<h3>Student Mode</h3>
-							</header>
-							<div class="image lit">
-								<img src="../static/images/code-1243504-1280x960.jpg" alt="" />
-							</div>
-							<p>Analyze student work at a per student basis. Requires the upload of a single database. Select the assignments to be looked over.</p>
-							<a href="{{ url_for('upload_file') }}" class="button alt">Start</a>
+
+		<!-- Main -->
+			<section id="main" >
+				<div class="inner"><a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+					<header class="major special">
+						<h1>Begin: Multiple Student Mode</h1>
+						<p>To begin the analysis process, please upload student work below. This needs to be the ".db" file from the CS50IDE environment.</p>
+					</header>
+                    <form method=post enctype=multipart/form-data>
+                        <div class="field">
+							<label for="file">History File(s)</label>
+							<input type=file name="file[]" multiple>
 						</div>
-					</article>
-					<article class="alt">
-						<div class="content">
-							<header>
-								<h3>Class Mode</h3>
-							</header>
-							<div class="image lit">
-								<img src="../static/images/lots-of-files-2-1236472-1280x960.jpg" alt="" />
-							</div>
-							<p>Upload many student databases at once to analyze the overall trend of a class over time. All assignments are automatically selected. Date range choices can be applied.</p>
-							<a href="{{ url_for('upload_files') }}" class="button alt">Start</a>
-						</div>
-					</article>
-				</div>
+
+                        <ul class="actions">
+                        <input type=submit value=Upload class="alt" >
+                        </ul>
+                    </form>
+                </div>
 			</section>
 
 		<!-- Footer -->
@@ -73,3 +64,5 @@
 			<script src="../static/assets/js/main.js"></script>
 
 	</body>
+</html>
+

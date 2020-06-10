@@ -39,74 +39,13 @@
 				<!-- One -->
 					<section id="one" class="major special">
 						<div class="content" style="text-align: center">
-							<h1>Student File Analysis</h1>
-
-
+							<h1>Class File Activity Analysis</h1>
 
 						</div>
 					</section>
 					<section id="two" class="major special">
-						<div class="content" style="text-align: center">
-                     		<h3>File Data</h3>
-							<table>
-                                    {% for key, value in file_dat.items() %}
-								<tr>
-									{% if key != "Large Text Insertion Detection*"%}
-									<th> {{ key }}</th>
-									<td> {{ value }}</td>
-									{% endif %}
-									{% if key == "Large Text Insertion Detection*" and value == -1 %}
-									<th> Large Text Insertion Detection*</th>
-									<td> False</td>
-									{% endif %}
-								</tr>
-								{% endfor %}
-							</table>
-						</div>
-					</section>
-					{% if file_dat["Large Text Insertion Detection*"] != -1 %}
-					<section id="three" class="major special">
-						<div class="content" style="text-align: center">
-							<h2>Large Text Insertion(s)</h2>
-							<table>
-								{% for key, value in file_dat["Large Text Insertion Detection*"].items() %}
-								<tr>
-									<th> {{ key }}</th>
-									<td><p> {{ value }}</p></td>
-								<tr>
-									{% endfor %}
-							</table>
-						</div>
-					</section>
-					{% endif %}
-
 
 					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
-					
-				
-					{% if deletion_insertion_timeline != -1 %}
-					<section id="four" class="major speical">
-						<h2>Heatmap</h2>
-						<div>
-							<table id="heatmap">
-								<tr>
-									<td><b>Date</b></td>
-									<td><b>12am - 8am</b></td>
-									<td><b>8am - 4pm</b></td>
-									<td><b>4pm - 12am</b></td>
-								</tr>
-
-
-							</table>
-						</div>
-						<script>displayHeatMap([
-
-							...JSON.parse(t)
-							
-							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
-							;</script>
-					</section>
-					{% endif %}
 
 					<section id="five" class="major special">
 						<div class="content" style="text-align: center">

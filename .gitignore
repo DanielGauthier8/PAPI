@@ -3,3 +3,5 @@
 .idea
 /databases/
 /__pycache__/
+
+!/databases/.gitkeep

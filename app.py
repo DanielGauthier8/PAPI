@@ -9,7 +9,7 @@ from flask_dropzone import Dropzone
 import db_actions
 
 
-UPLOAD_FOLDER = './databases'
+UPLOAD_FOLDER = 'databases'
 ALLOWED_EXTENSIONS = {'db'}
 
 app = Flask(__name__)

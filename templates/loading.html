@@ -10,18 +10,20 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
-        <meta http-equiv="refresh" content="0; URL='{{ url_for('results') }}'" />
+        <meta http-equiv="refresh" content="0; URL='{{ url_for('results',token=token) }}'" />
 	</head>
 	<body>
 
 		<!-- Header -->
 			<header id="header">
 				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">introspect</a>
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
-						<a href="generic.html">Generic</a>
-						<a href="elements.html">Elements</a>
+						<a href="{{ url_for('start') }}">Start</a>
+						<a href="{{ url_for('upload_file') }}">Single Student</a>
+						<a href="{{ url_for('upload_files') }}">Multiple Students</a>
+						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>
 			</header>
@@ -87,7 +89,7 @@
 					</header>
 
 					<div class="copyright">
-						&copy; Untitled Design: <a href="https://templated.co/">TEMPLATED</a>. Images <a href="https://unsplash.com/">Unsplash</a>
+						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
 					</div>
 				</div>
 			</section>

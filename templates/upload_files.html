@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>History Lookup</title>
+		<title>Generic - Introspect by TEMPLATED</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
@@ -32,24 +32,21 @@
 			<section id="main" >
 				<div class="inner">
 					<header class="major special">
-						<h1>Files</h1>
+						<h1>Begin</h1>
+						<p>To begin the analysis process, please upload student work below. This needs to be the ".db" file from the CS50IDE environment.</p>
 					</header>
 					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+                    <form method=post enctype=multipart/form-data>
+                        <div class="field">
+							<label for="file">History File</label>
+							<input type=file name=file>
+						</div>
 
-
-					<form method="post" action="#">
-						<input type="checkbox" id="select_all_files" name="chosen_files" value="All Files">
-						<label for="select_all_files">All Files</label>
-						<br/><br/>
-						{% for each in files_list %}
-						<input type="checkbox" id="id_{{each}}" name="chosen_files" value="{{each}}">
-						<label for="id_{{each}}">{{each}}</label>
-
-						{% endfor %}
-						<br/>
-						<input type="submit" value="Submit">
-					</form>
-				</div>
+                        <ul class="actions">
+                        <input type=submit value=Upload class="alt" >
+                        </ul>
+                    </form>
+                </div>
 			</section>
 
 		<!-- Footer -->
@@ -69,3 +66,4 @@
 
 	</body>
 </html>
+

@@ -19,8 +19,10 @@
 					<a href="{{ url_for('index') }}" class="logo">papi</a>
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
-						<a href="generic.html">Generic</a>
-						<a href="elements.html">Elements</a>
+						<a href="{{ url_for('start') }}">Start</a>
+						<a href="{{ url_for('upload_file') }}">Single Student</a>
+						<a href="{{ url_for('upload_files') }}">Multiple Students</a>
+						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>
 			</header>
@@ -31,7 +33,7 @@
 				<div class="inner">
 					<h1>Assignment Analysis: <span>Get a greater understanding of how your students program</span></h1>
 					<ul class="actions">
-						<li><a href="{{ url_for('upload_file') }}" class="button alt">Get Started</a></li>
+						<li><a href="{{ url_for('start') }}" class="button alt">Get Started</a></li>
 					</ul>
 				</div>
 			</section>
@@ -44,7 +46,7 @@
 					</header>
 					<p> An instructor needs ways to evaluate students when teaching new programming skills. A student’s progress throughout a class must be recorded so the teacher knows where the student needs to improve and how to improve instruction material. Currently, assignments are static when handed in; they do not indicate how a student got to their end resulting product. If students' progress on an assignment can be recorded and analyzed, formative feedback can be provided to students and instructors. This would not make sense to implement manually as it would take too much time of the teaching staff. To combat this issue, this software can help the teaching staff provide a better experience for the students.</p>
 					<ul class="actions">
-						<li><a href="#" class="button alt">Learn More</a></li>
+						<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
 					</ul>
 				</div>
 			</section>
@@ -55,23 +57,25 @@
 					<article>
 						<div class="content">
 							<header>
-								<h3>Pellentesque adipis</h3>
+								<h3>One Student</h3>
 							</header>
-							<div class="image fit">
-								<img src="../static/images/pic01.jpg" alt="" />
+							<div class="image lit">
+								<img src="../static/images/code-1243504-1280x960.jpg" alt="" />
 							</div>
-							<p>Cumsan mollis eros. Pellentesque a diam sit amet mi magna ullamcorper vehicula. Integer adipiscin sem. Nullam quis massa sit amet lorem ipsum feugiat tempus.</p>
+							<p>Analyze student work at a per student basis. Requires the upload of a single database. Select the assignments to be looked over.</p>
+							<a href="{{ url_for('upload_file') }}" class="button alt">Start</a>
 						</div>
 					</article>
 					<article class="alt">
 						<div class="content">
 							<header>
-								<h3>Morbi interdum mol</h3>
+								<h3>Many Students</h3>
 							</header>
-							<div class="image fit">
-								<img src="../static/images/pic02.jpg" alt="" />
+							<div class="image lit">
+								<img src="../static/images/lots-of-files-2-1236472-1280x960.jpg" alt="" />
 							</div>
-							<p>Cumsan mollis eros. Pellentesque a diam sit amet mi magna ullamcorper vehicula. Integer adipiscin sem. Nullam quis massa sit amet lorem ipsum feugiat tempus.</p>
+							<p>Upload many student databases at once to analyze the overall trend of a class over time. All assignments are automatically selected. Date range choices can be applied.</p>
+							<a href="{{ url_for('upload_files') }}" class="button alt">Start</a>
 						</div>
 					</article>
 				</div>
@@ -84,11 +88,11 @@
 						<div class="content">
 							<span class="icon fa-laptop"></span>
 							<header>
-								<h3>Tempus Feugiat</h3>
+								<h3>Understand the Students Process</h3>
 							</header>
-							<p>Morbi interdum mollis sapien. Sed ac risus. Phasellus lacinia, magna lorem ullamcorper laoreet, lectus arcu.</p>
 							<ul class="actions">
-								<li><a href="#" class="button alt">Learn More</a></li>
+								<p>By analyzing how and when a student is programming advice can be provided to the student no matter their skill level.</p>
+								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
 							</ul>
 						</div>
 					</article>
@@ -96,11 +100,11 @@
 						<div class="content">
 							<span class="icon fa-diamond"></span>
 							<header>
-								<h3>Aliquam Nulla</h3>
+								<h3>Check for Large Text Insertions</h3>
 							</header>
-							<p>Ut convallis, sem sit amet interdum consectetuer, odio augue aliquam leo, nec dapibus tortor nibh sed.</p>
+							<p>Nip the issue in the bud and get alerted to copy and pasting code. This is not a good practice when programming, but is especially so when in the beginning stages of learning to code.</p>
 							<ul class="actions">
-								<li><a href="#" class="button alt">Learn More</a></li>
+								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
 							</ul>
 						</div>
 					</article>
@@ -108,11 +112,11 @@
 					<div class="content">
 							<span class="icon fa-laptop"></span>
 							<header>
-								<h3>Sed Magna</h3>
+								<h3>Find Class Trends</h3>
 							</header>
-							<p>Suspendisse mauris. Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula.</p>
+							<p>Discover when students begin and end an assignment to stress early and often code practices.</p>
 							<ul class="actions">
-								<li><a href="#" class="button alt">Learn More</a></li>
+								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
 							</ul>
 						</div>
 					</article>
@@ -123,7 +127,7 @@
 			<section id="footer">
 				<div class="inner">
 					<div class="copyright">
-						&copy; PAPI: <a href="https://templated.co/">TEMPLATED</a>. Images <a href="https://unsplash.com/">Unsplash</a>
+						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
 					</div>
 				</div>
 			</section>

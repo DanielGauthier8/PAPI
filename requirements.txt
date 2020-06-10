@@ -1,6 +1,4 @@
-flask
-werkzeug
-matplotlib
-numpy
+flask==1.1.2
 datetime
 sqlite3
+werkzeug==1.0.1

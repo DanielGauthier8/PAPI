@@ -4,7 +4,6 @@ import secrets
 
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-from flask_dropzone import Dropzone
 
 import db_actions
 
@@ -15,18 +14,10 @@ ALLOWED_EXTENSIONS = {'db'}
 app = Flask(__name__)
 
 app.config.update(
-DROPZONE_ALLOWED_FILE_TYPE = '.db',
-DROPZONE_UPLOAD_MULTIPLE = True,
-DROPZONE_REDIRECT_VIEW = 'file_analysis',
-UPLOAD_FOLDER = UPLOAD_FOLDER,
-DROPZONE_MAX_FILE_SIZE = 3,
-DROPZONE_MAX_FILES = 30,
-DROPZONE_PARALLEL_UPLOADS = 3,  # set parallel amount
-MAX_CONTENT_LENGTH = 300 * 1024 * 1024,
-SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
+    UPLOAD_FOLDER = UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH = 300 * 1024 * 1024,
+    SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
 )
-
-drop_zone = Dropzone(app)
 
 
 def allowed_file(filename):
@@ -106,7 +97,7 @@ def upload_files():
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
-    time.sleep(2)
+    time.sleep(1)
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor)
 

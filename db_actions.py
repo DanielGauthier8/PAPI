@@ -619,14 +619,18 @@ def all_data(db_file, file_namez):
     
     fileHistory = "["
     for i in the_pulse:
-        fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-        fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
+        if(len(the_pulse[i][0]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
+        if(len(the_pulse[i][1]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + the_pulse[i][1][:1] + "\"},"
+
     fileHistory = fileHistory[:-1] + "]"
     
     deletion_insertion_timeline = fileHistory
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
-
 
 def multiple_database_get_data (db_filename_list):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis

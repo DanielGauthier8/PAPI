@@ -615,8 +615,6 @@ def all_data(db_file, file_namez):
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-    
     fileHistory = "["
     for i in the_pulse:
         if(len(the_pulse[i][0]) > 1):

@@ -118,6 +118,8 @@ def file_analysis(token):
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
 
+    the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour")
+
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
                            deletion_insertion_timeline= deletion_insertion_timeline)
 

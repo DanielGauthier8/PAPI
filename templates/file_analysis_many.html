@@ -44,8 +44,26 @@
 						</div>
 					</section>
 					<section id="two" class="major special">
+						<div class="content" style="text-align: center">
+                     		<h3>Class Summary</h3>
+							<table>
+                                    {% for key, value in file_dat.items() %}
+								<tr>
+									{% if key != "Large Text Insertion Detection*"%}
+									<th> {{ key }}</th>
+									<td> {{ value }}</td>
+									{% endif %}
+									{% if key == "Large Text Insertion Detection*" and value == -1 %}
+									<th> Large Text Insertion Detection*</th>
+									<td> False</td>
+									{% endif %}
+								</tr>
+								{% endfor %}
+							</table>
+						</div>
+					</section>
 
-					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
+					<!-- <section id="two" class="major special"> -->
 
 					<section id="five" class="major special">
 						<div class="content" style="text-align: center">
@@ -55,6 +73,30 @@
 
 
 						</div>
+					</section>
+
+					<hr />
+					<section id="four" class="major speical">
+						<h3>Heatmap</h3>
+						<p>Get insights into when your students are working the most</p>
+						<div>
+							<table id="heatmap">
+								<tr>
+									<td><b>Date</b></td>
+									<td><b>12am - 8am</b></td>
+									<td><b>8am - 4pm</b></td>
+									<td><b>4pm - 12am</b></td>
+								</tr>
+
+
+							</table>
+						</div>
+						<script>displayHeatMap([
+
+							...JSON.parse(`{{ heatmaps|safe }}`)
+							
+							])
+							;</script>
 					</section>
 
 				</div>

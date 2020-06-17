@@ -9,13 +9,18 @@ const cellColor = (ratio, hex) => {
 
 // @todo: Add heatmap time frame? (e.g., 8 hours, 4 hours, hourly, etc)
 
-const displayHeatMap = (input, inserts, deletes) => {
+const displayHeatMap = (input, inserts = 0, deletes = 0) => {
 
     // Import data from JSON
     data = [];
     Object.keys(input).forEach(key => {
         data.push({time: moment(input[key].time), i: input[key].o === "i" ? 1 : 0, d: input[key].o === "d" ? 1 : 0})
     })
+
+    let totalsProvided = true;
+    if(inserts === 0 && deletes === 0){
+        totalsProvided = false;
+    }
 
 
     // Re-organize data by date 
@@ -38,6 +43,11 @@ const displayHeatMap = (input, inserts, deletes) => {
         // Push inserts and deletions from that timeframe into the obj
         dates[data[i].time.format("MDYY")][Math.floor(parseInt(data[i].time.format('H')) / 8)].i += data[i].i;
         dates[data[i].time.format("MDYY")][Math.floor(parseInt(data[i].time.format('H')) / 8)].d += data[i].d;
+
+        if(!totalsProvided){
+            inserts += data[i].i;
+            deletes += data[i].d;
+        }
     }
 
     console.log(dates)

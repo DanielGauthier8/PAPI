@@ -6,16 +6,20 @@ import os
 
 print("Running")
 
+
 def clear_old_files():
     databases = os.listdir("./databases")
     # print(databases)
     for i, file, in enumerate(databases):
-        if datetime.datetime.strptime(time.ctime(os.stat("./databases/" + file).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
+        if datetime.datetime.strptime(time.ctime(os.stat("./databases/" + file).st_atime),
+                                      "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days=10) < datetime.datetime.now():
             # File is older than 10 days, delete to save hard drive space
             os.remove("./databases/" + file)
 
-# Autodelete older files at server startup
+
+# Auto-delete older files at server startup
 clear_old_files()
+
 
 # ----------------------------------------Helper Functions
 def __remove_char_from_string(the_string, the_characters):
@@ -26,12 +30,10 @@ def __remove_char_from_string(the_string, the_characters):
 
 def __db_string_to_array(the_string):
     """Cleans db strings of leftover byte characters
-
     Parameters
     ----------
     the_string : str
         The string to be cleaned
-
     Returns
     -------
     the_string : str
@@ -64,9 +66,8 @@ def __cumulative_list(the_list):
     return new_list
 
 
-def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
+def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity=True):
     """Change the granularity of a user actions over time
-
     Parameters
     ----------
     time_list : list
@@ -77,7 +78,6 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
         The interval size between events
     skip_no_activity : bool
         Chooses if the blank activity times are shown or hidden
-
     Returns
     -------
     new_time_list : list
@@ -112,17 +112,20 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
     last_value = None
     if skip_no_activity:
         for the_time in time_list:
+            if isinstance(the_time, str) :
+                print(the_time)
+                the_time = datetime.datetime.strptime(the_time, '%Y-%m-%d, %H:%M')
             if current_max_time is None:
-                current_max_time = the_time + zoom_options[zoom_level]
+                current_max_time = the_time #+ zoom_options[zoom_level]
 
             if current_max_time > the_time:
                 for list_index in range(0, len(items_list)):
-                    new_item_list[list_index][len(new_item_list[list_index])-1] += items_list[list_index][index]
+                    new_item_list[list_index][len(new_item_list[list_index]) - 1] += items_list[list_index][index]
             else:
                 if zoom_level == "day":
                     new_time_list.append(current_max_time.date())
                 elif zoom_level == "hour":
-                    new_time_list.append(current_max_time.strftime("%Y-%m-%d, %H")+":00")
+                    new_time_list.append(current_max_time.strftime("%Y-%m-%d, %H") + ":00")
                 else:
                     new_time_list.append(current_max_time.strftime("%Y-%m-%d, %H:%M"))
 
@@ -133,7 +136,6 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
 
             index += 1
 
-
     return user_selection, new_time_list, new_item_list
 
 
@@ -142,12 +144,10 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
 
 def set_cursor(filename):
     """Provides a cursor of the sqlite db
-
     Parameters
     ----------
     filename : str
         The filename of the db to be browsed
-
     Returns
     -------
     cursor : object
@@ -160,12 +160,10 @@ def set_cursor(filename):
 
 def clean_up(cursor):
     """Removes private/undesired data from provided db
-
     Parameters
     ----------
     cursor : object
         The current db cursor object
-
     Returns
     -------
     cursor : object
@@ -182,7 +180,6 @@ def clean_up(cursor):
 
 def get_like_db(cursor, db_name, column, like_string):
     """Gets any db row with specific column value
-
     Parameters
     ----------
     cursor : object
@@ -207,7 +204,6 @@ def get_like_db(cursor, db_name, column, like_string):
 
 def document_info(cursor, file_name, lookup_item):
     """Gets any specific file metadata from a final resulting file
-
         Parameters
         ----------
         cursor : cursor
@@ -241,7 +237,6 @@ def document_info(cursor, file_name, lookup_item):
 
 def documentz_info(cursor, file_namez, lookup_item):
     """Gets any specific file metadata from a list of final resulting filez
-
     Parameters
     ----------
     cursor : cursor
@@ -277,7 +272,6 @@ def documentz_info(cursor, file_namez, lookup_item):
 
 def gather(cursor, file_name):
     """Converts SQLite db into an easier to manage dictionary
-
     Parameters
     ----------
     cursor : cursor
@@ -317,14 +311,13 @@ def gather(cursor, file_name):
             general_pulse[the_timestamp] = \
                 [__remove_char_from_string(str(block_insertions), ("\\\\n", "\\\\n", "////", " \\ ", "\\t"))
                     , __remove_char_from_string(str(block_deletions), ("\\\\n", "\\\\n", "////", " \\ ", "\\t")),
-                                                file_name]
+                 file_name]
     # (filename::return time, inserted_text) -> dictionary
     return general_pulse
 
 
 def gather_many(cursor, files):
     """Converts SQLite db into an easier to manage dictionary
-
     Parameters
     ----------
     cursor : cursor
@@ -349,7 +342,6 @@ def gather_many(cursor, files):
 
 def all_pulses(the_timeline, the_pulse):
     """Finds programming events in dictionary by converting key value pairs into parsable actions
-
     Parameters
     ----------
     the_pulse : dict
@@ -389,7 +381,6 @@ def all_pulses(the_timeline, the_pulse):
 
 def all_files(cursor):
     """Finds all filenames in db
-
     Parameters
     ----------
     cursor : cursor
@@ -419,7 +410,6 @@ def all_files(cursor):
 
 def comment_count(documentz):
     """Gets the number of comments in file in its current state
-
     Parameters
     ----------
     documentz : list
@@ -452,7 +442,6 @@ def large_insertion_check(general_pulse):
     """Finds the average insertion size of the user,
     if there are elements with a greater than 800% difference
     between the regular insertion size the element is flagged
-
     Parameters
     ----------
     general_pulse : dict
@@ -476,8 +465,8 @@ def large_insertion_check(general_pulse):
     for element in general_pulse:
         insertion_size = len(__remove_char_from_string(str(general_pulse[element][0][1:]), [" ", "///"]))
         if (insertion_size > average * 8 and insertion_size > 40) or len(general_pulse[element]) > 400:
-            large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]).\
-                replace("\n","<br/>").replace("////", "").replace("\\", "")
+            large_insertions[general_pulse[element][2]] = str(general_pulse[element][0][1:]). \
+                replace("\n", "<br/>").replace("////", "").replace("\\", "")
 
     if len(large_insertions) > 0:
         return large_insertions
@@ -487,7 +476,6 @@ def large_insertion_check(general_pulse):
 
 def time_spent(timeline_list):
     """Calculates the time spent on each set of files provided
-
     Parameters
     ----------
     timeline_list : list
@@ -535,7 +523,6 @@ def time_spent(timeline_list):
 
 def deletions_insertions(the_timeline, the_pulse) -> (int, int):
     """Gets the number of deletions and insertions of filez
-
     Parameters
     ----------
     the_pulse : dict
@@ -552,7 +539,6 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
         List in chronological order, marking number of deletions at each user action
     insertions_list : list
         List in chronological order, marking number of insertions at each user action
-
     """
     deletions = 0
     insertions = 0
@@ -582,7 +568,6 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
 # ----------------------------------------Website Actions
 def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     """Calls all required helper functions to get non-graphical metadata
-
     Parameters
     ----------
     the_pulse : dict
@@ -611,16 +596,17 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
     return local_file_data, deletions_list, insertions_list
 
-def build_file_history(pulse, buildingMultiStudentArray = False):
+
+def build_file_history(pulse, buildingMultiStudentArray=False):
     # Builds a JSON string of the pulse history for client-side processing
     fileHistory = ""
     if not buildingMultiStudentArray:
         fileHistory = "["
     for i in pulse:
-        if(len(pulse[i][0]) > 1):
+        if (len(pulse[i][0]) > 1):
             fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
             fileHistory += "\"o\": \"" + pulse[i][0][:1] + "\"},"
-        if(len(pulse[i][1]) > 1):
+        if (len(pulse[i][1]) > 1):
             fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
             fileHistory += "\"o\": \"" + pulse[i][1][:1] + "\"},"
     if not buildingMultiStudentArray:
@@ -630,7 +616,6 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
 
 def all_data(db_file, file_namez):
     """Calls all required helper functions to get all metadata
-
     Parameters
     ----------
     db_file : string
@@ -664,16 +649,13 @@ def all_data(db_file, file_namez):
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
-
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-    
     deletion_insertion_timeline = build_file_history(the_pulse)
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
-def multiple_database_get_data (db_filename_list):
-    """Calls all required helper functions to get all metadata for class mode, multi-student analysis
 
+def multiple_database_get_data(db_filename_list):
+    """Calls all required helper functions to get all metadata for class mode, multi-student analysis
         Parameters
         ----------
         db_filename_list : list
@@ -687,7 +669,6 @@ def multiple_database_get_data (db_filename_list):
         file_dat: dict
             Summary of metadata trends across student files
         deletion_insertion_timeline:
-
         """
 
     list_of_pulses = []
@@ -713,14 +694,14 @@ def multiple_database_get_data (db_filename_list):
         for action in student_db_file:
             try:
                 temp = many_student_pulse[action]
-                many_student_pulse[action] = [temp[0] + student_db_file[action][0][:1], temp[1] + student_db_file[action][1][:1], temp[2] + "  " + student_db_file[action][2]]
+                many_student_pulse[action] = [temp[0] + student_db_file[action][0][:1],
+                                              temp[1] + student_db_file[action][1][:1],
+                                              temp[2] + "  " + student_db_file[action][2]]
             except KeyError:
                 many_student_pulse[action] = student_db_file[action]
 
     the_timeline = list(many_student_pulse.keys())
     the_timeline.sort()
     graphs = all_pulses(the_timeline, many_student_pulse)
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-
 
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat

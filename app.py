@@ -1,4 +1,5 @@
 import time
+import datetime
 import os
 import secrets
 
@@ -7,16 +8,16 @@ from werkzeug.utils import secure_filename
 
 import db_actions
 
-
 UPLOAD_FOLDER = 'databases'
 ALLOWED_EXTENSIONS = {'db'}
 
 app = Flask(__name__)
 
 app.config.update(
-    UPLOAD_FOLDER = UPLOAD_FOLDER,
-    MAX_CONTENT_LENGTH = 300 * 1024 * 1024,
-    SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
+    UPLOAD_FOLDER=UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH=300 * 1024 * 1024,
+    SECRET_KEY='zdfxfghjkbhgfdhvgc',
+    PERMANENT_SESSION_LIFETIME=datetime.timedelta(minutes=15)
 )
 
 
@@ -27,6 +28,7 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
+    session.permanent = True
     return render_template('index.html')
 
 
@@ -113,9 +115,9 @@ def results(token):
     return render_template('student_info.html', files_list=session[token])
 
 
-@app.route('/file_analysis/<token>',  methods=['GET', 'POST'])
+@app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
-    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
+    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
@@ -128,20 +130,41 @@ def file_analysis(token):
         file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
             all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
 
-        user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, request.form['granularity'], skip_empty)
+        user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
+                                                                                 request.form['granularity'],
+                                                                                 skip_empty)
 
         return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
+                               deletion_insertion_timeline=deletion_insertion_timeline, user_selection=user_selection)
 
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
+                           deletion_insertion_timeline=deletion_insertion_timeline, user_selection=user_selection)
 
 
-@app.route('/file_analysis_many/<token>')
+@app.route('/file_analysis_many/<token>', methods=['GET', 'POST'])
 def file_analysis_many(token):
     # TODO: Add deletion insertion timeline
-    graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions.\
+    graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
         multiple_database_get_data(session[token])
+    user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
+
+    if request.method == 'POST':
+        if request.form['skip_check'] is "no":
+            skip_empty = False
+        else:
+            skip_empty = True
+
+        graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
+            multiple_database_get_data(session[token])
+
+        user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
+                                                                                 request.form['granularity'],
+                                                                                 skip_empty)
+
+        return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
+                               deletion_insertion_timeline=deletion_insertion_timeline,
+                               heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection)
 
     return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline, heatmaps=heatmaps, file_dat=file_dat)
+                           deletion_insertion_timeline=deletion_insertion_timeline,
+                           heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection)

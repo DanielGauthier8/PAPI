@@ -4,7 +4,6 @@ import secrets
 
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-from flask_dropzone import Dropzone
 
 import db_actions
 
@@ -15,18 +14,10 @@ ALLOWED_EXTENSIONS = {'db'}
 app = Flask(__name__)
 
 app.config.update(
-DROPZONE_ALLOWED_FILE_TYPE = '.db',
-DROPZONE_UPLOAD_MULTIPLE = True,
-DROPZONE_REDIRECT_VIEW = 'file_analysis',
-UPLOAD_FOLDER = UPLOAD_FOLDER,
-DROPZONE_MAX_FILE_SIZE = 3,
-DROPZONE_MAX_FILES = 30,
-DROPZONE_PARALLEL_UPLOADS = 3,  # set parallel amount
-MAX_CONTENT_LENGTH = 300 * 1024 * 1024,
-SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
+    UPLOAD_FOLDER = UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH = 300 * 1024 * 1024,
+    SECRET_KEY = 'zdfxfghjkbhgfdhvgc'
 )
-
-drop_zone = Dropzone(app)
 
 
 def allowed_file(filename):
@@ -106,7 +97,7 @@ def upload_files():
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
-    time.sleep(2)
+    time.sleep(1)
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor)
 
@@ -122,13 +113,28 @@ def results(token):
     return render_template('student_info.html', files_list=session[token])
 
 
-@app.route('/file_analysis/<token>')
+@app.route('/file_analysis/<token>',  methods=['GET', 'POST'])
 def file_analysis(token):
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+    user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
+
+    if request.method == 'POST':
+        if request.form['skip_check'] is "no":
+            skip_empty = False
+        else:
+            skip_empty = True
+
+        file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
+            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+
+        user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, request.form['granularity'], skip_empty)
+
+        return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
+                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
 
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline)
+                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
 
 
 @app.route('/file_analysis_many/<token>')

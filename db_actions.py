@@ -52,7 +52,7 @@ def __cumulative_list(the_list):
     return new_list
 
 
-def time_graph_granularity(time_list, items_list, zoom_level):
+def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
     """Change the granularity of a user actions over time
 
     Parameters
@@ -63,6 +63,8 @@ def time_graph_granularity(time_list, items_list, zoom_level):
         The list to pair down
     zoom_level : string
         The interval size between events
+    skip_no_activity : bool
+        Chooses if the blank activity times are shown or hidden
 
     Returns
     -------
@@ -70,14 +72,25 @@ def time_graph_granularity(time_list, items_list, zoom_level):
         New shorter times list in chronological order
     new_item_list : list
         New list of user actions on less granular timeline
+    user_selection: dict
+        Provides checking and unchecking information for user form
     """
 
     # Zoom levels
     zoom_options = {"day": datetime.timedelta(days=1), "hour": datetime.timedelta(hours=1),
                     "minute": datetime.timedelta(minutes=1)}
-
+    # default, all unchecked
+    user_selection = {"day": "", "hour": "", "minute": "",
+                      "skip_no_activity": "", "show_no_activity": ""}
     new_time_list = []
     new_item_list = []
+
+    if skip_no_activity:
+        user_selection["skip_no_activity"] = "checked"
+    else:
+        user_selection["show_no_activity"] = "checked"
+
+    user_selection[zoom_level] = "checked"
 
     current_max_time = None
     for count in items_list:
@@ -85,23 +98,31 @@ def time_graph_granularity(time_list, items_list, zoom_level):
         new_item_list.append([0])
     index = 0
     last_value = None
-    for the_time in time_list:
-        if current_max_time is None:
-            current_max_time = the_time + zoom_options[zoom_level]
+    if skip_no_activity:
+        for the_time in time_list:
+            if current_max_time is None:
+                current_max_time = the_time + zoom_options[zoom_level]
 
-        if current_max_time > the_time:
-            for list_index in range(0, len(items_list)):
-                new_item_list[list_index][len(new_item_list[list_index])-1] += items_list[list_index][index]
-        else:
-            new_time_list.append(current_max_time)
-            for count in range(0, len(items_list)):
-                # start and array of each
-                new_item_list[count].append(0)
-            current_max_time = the_time + zoom_options[zoom_level]
+            if current_max_time > the_time:
+                for list_index in range(0, len(items_list)):
+                    new_item_list[list_index][len(new_item_list[list_index])-1] += items_list[list_index][index]
+            else:
+                if zoom_level == "day":
+                    new_time_list.append(current_max_time.date())
+                elif zoom_level == "hour":
+                    new_time_list.append(current_max_time.strftime("%Y-%m-%d, %H")+":00")
+                else:
+                    new_time_list.append(current_max_time.strftime("%Y-%m-%d, %H:%M"))
 
-        index += 1
+                for count in range(0, len(items_list)):
+                    # start and array of each
+                    new_item_list[count].append(0)
+                current_max_time = the_time + zoom_options[zoom_level]
 
-    return new_time_list, new_item_list
+            index += 1
+
+
+    return user_selection, new_time_list, new_item_list
 
 
 # ----------------------------------------Database Management
@@ -615,8 +636,6 @@ def all_data(db_file, file_namez):
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-    
     fileHistory = "["
     for i in the_pulse:
         if(len(the_pulse[i][0]) > 1):
@@ -673,7 +692,7 @@ def multiple_database_get_data (db_filename_list):
     the_timeline = list(many_student_pulse.keys())
     the_timeline.sort()
     graphs = all_pulses(the_timeline, many_student_pulse)
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "day")
+    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
 
 
     return graphs, the_timeline, deletion_insertion_timeline

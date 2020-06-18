@@ -113,13 +113,28 @@ def results(token):
     return render_template('student_info.html', files_list=session[token])
 
 
-@app.route('/file_analysis/<token>')
+@app.route('/file_analysis/<token>',  methods=['GET', 'POST'])
 def file_analysis(token):
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.\
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+    user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
+
+    if request.method == 'POST':
+        if request.form['skip_check'] is "no":
+            skip_empty = False
+        else:
+            skip_empty = True
+
+        file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
+            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+
+        user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, request.form['granularity'], skip_empty)
+
+        return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
+                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
 
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline)
+                           deletion_insertion_timeline= deletion_insertion_timeline, user_selection=user_selection)
 
 
 @app.route('/file_analysis_many/<token>')

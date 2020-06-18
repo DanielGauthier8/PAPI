@@ -25,7 +25,7 @@
 						<a href="{{ url_for('index') }}">Home</a>
 						<a href="{{ url_for('start') }}">Start</a>
 						<a href="{{ url_for('upload_file') }}">Student Mode</a>
-						<a href="{{ url_for('upload_files') }}">Class Mode</a>
+						<a href="{{ url_for('upload_files') }}"><strong>Class Mode</strong></a>
 						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>
@@ -68,14 +68,6 @@
 					<section id="five" class="major special">
 						<div class="content" style="text-align: center">
 							<h3>File Trends</h3>
-							<canvas id="myLine" width="100%"></canvas>
-
-
-
-						</div>
-					</section>
-
-					<hr />
 					<section id="four" class="major speical">
 						<h3>Heatmap</h3>
 						<p>Get insights into when your students are working the most</p>
@@ -98,7 +90,40 @@
 							])
 							;</script>
 					</section>
+<h2>Activity by Type</h2>
+							<form method="post" action="#">
+								<table>
+									<tr>
+										<td>
+											<h3>Granularity</h3>
+											<input type="radio" id="minute" name="granularity" value="minute" {{user_selection["minute"]}}>
+											<label for="minute">Minute</label><br>
+											<input type="radio" id="hour" name="granularity" value="hour" {{user_selection["hour"]}}>
+											<label for="hour">Hour</label><br>
+											<input type="radio" id="day" name="granularity" value="day" {{user_selection["day"]}}>
+											<label for="day">Day</label>
+										</td>
+										<td>
+											<h3>Skip Non-working Time</h3>
+											<input type="radio" id="yes" name="skip_check" value="yes" {{user_selection["skip_no_activity"]}}>
+											<label for="yes">Yes</label><br>
+											<input type="radio" id="no" name="skip_check" value="no" {{user_selection["show_no_activity"]}}>
+											<label for="no">No</label><br>
+										</td>
+										<td><input type="submit" value="Submit"></td>
+									</tr>
 
+
+								</table>
+							</form>
+							<canvas id="myLine" width="100%"></canvas>
+
+
+
+						</div>
+					</section>
+
+					<hr />
 				</div>
 			</section>
 

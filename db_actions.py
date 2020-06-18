@@ -590,6 +590,22 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
     return local_file_data, deletions_list, insertions_list
 
+def build_file_history(pulse, buildingMultiStudentArray = False):
+    # Builds a JSON string of the pulse history for client-side processing
+    fileHistory = ""
+    if not buildingMultiStudentArray:
+        fileHistory = "["
+    for i in pulse:
+        if(len(pulse[i][0]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + pulse[i][0][:1] + "\"},"
+        if(len(pulse[i][1]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + pulse[i][1][:1] + "\"},"
+    if not buildingMultiStudentArray:
+        fileHistory = fileHistory[:-1] + "]"
+    return fileHistory
+
 
 def all_data(db_file, file_namez):
     """Calls all required helper functions to get all metadata
@@ -629,18 +645,7 @@ def all_data(db_file, file_namez):
 
     the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
     
-    fileHistory = "["
-    for i in the_pulse:
-        if(len(the_pulse[i][0]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
-        if(len(the_pulse[i][1]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + the_pulse[i][1][:1] + "\"},"
-
-    fileHistory = fileHistory[:-1] + "]"
-    
-    deletion_insertion_timeline = fileHistory
+    deletion_insertion_timeline = build_file_history(the_pulse)
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
@@ -665,12 +670,20 @@ def multiple_database_get_data (db_filename_list):
 
     list_of_pulses = []
     deletion_insertion_timeline = {}
+    overallTimeLine = []
+    heatmaps = "["
 
     for db_file in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
+        overallTimeLine.extend(the_timeline)
         list_of_pulses.append(the_pulse)
+        heatmaps += build_file_history(the_pulse, True)
+
+    file_dat = time_spent(overallTimeLine)
+
+    heatmaps = heatmaps[:-1] + "]"
 
     many_student_pulse = list_of_pulses.pop(0)
 
@@ -687,5 +700,4 @@ def multiple_database_get_data (db_filename_list):
     graphs = all_pulses(the_timeline, many_student_pulse)
     the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "day")
 
-
-    return graphs, the_timeline, deletion_insertion_timeline
+    return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat

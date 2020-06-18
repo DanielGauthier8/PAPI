@@ -1,9 +1,21 @@
 import os
 import sqlite3
 import datetime
+import time
+import os
 
 print("Running")
 
+def clear_old_files():
+    databases = os.listdir("./databases")
+    # print(databases)
+    for i, file, in enumerate(databases):
+        if datetime.datetime.strptime(time.ctime(os.stat("./databases/" + file).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
+            # File is older than 10 days, delete to save hard drive space
+            os.remove("./databases/" + file)
+
+# Autodelete older files at server startup
+clear_old_files()
 
 # ----------------------------------------Helper Functions
 def __remove_char_from_string(the_string, the_characters):
@@ -599,6 +611,22 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
     return local_file_data, deletions_list, insertions_list
 
+def build_file_history(pulse, buildingMultiStudentArray = False):
+    # Builds a JSON string of the pulse history for client-side processing
+    fileHistory = ""
+    if not buildingMultiStudentArray:
+        fileHistory = "["
+    for i in pulse:
+        if(len(pulse[i][0]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + pulse[i][0][:1] + "\"},"
+        if(len(pulse[i][1]) > 1):
+            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
+            fileHistory += "\"o\": \"" + pulse[i][1][:1] + "\"},"
+    if not buildingMultiStudentArray:
+        fileHistory = fileHistory[:-1] + "]"
+    return fileHistory
+
 
 def all_data(db_file, file_namez):
     """Calls all required helper functions to get all metadata
@@ -636,18 +664,10 @@ def all_data(db_file, file_namez):
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
-    fileHistory = "["
-    for i in the_pulse:
-        if(len(the_pulse[i][0]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + the_pulse[i][0][:1] + "\"},"
-        if(len(the_pulse[i][1]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + the_pulse[i][1][:1] + "\"},"
 
-    fileHistory = fileHistory[:-1] + "]"
+    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
     
-    deletion_insertion_timeline = fileHistory
+    deletion_insertion_timeline = build_file_history(the_pulse)
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
@@ -672,12 +692,20 @@ def multiple_database_get_data (db_filename_list):
 
     list_of_pulses = []
     deletion_insertion_timeline = {}
+    overallTimeLine = []
+    heatmaps = "["
 
     for db_file in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
+        overallTimeLine.extend(the_timeline)
         list_of_pulses.append(the_pulse)
+        heatmaps += build_file_history(the_pulse, True)
+
+    file_dat = time_spent(overallTimeLine)
+
+    heatmaps = heatmaps[:-1] + "]"
 
     many_student_pulse = list_of_pulses.pop(0)
 
@@ -695,4 +723,4 @@ def multiple_database_get_data (db_filename_list):
     the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
 
 
-    return graphs, the_timeline, deletion_insertion_timeline
+    return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat

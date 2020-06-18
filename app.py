@@ -140,8 +140,8 @@ def file_analysis(token):
 @app.route('/file_analysis_many/<token>')
 def file_analysis_many(token):
     # TODO: Add deletion insertion timeline
-    graphs, the_timeline, deletion_insertion_timeline = db_actions.\
+    graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions.\
         multiple_database_get_data(session[token])
 
     return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
-                           deletion_insertion_timeline= deletion_insertion_timeline)
+                           deletion_insertion_timeline= deletion_insertion_timeline, heatmaps=heatmaps, file_dat=file_dat)

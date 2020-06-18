@@ -83,7 +83,7 @@
 					<h3>File Trends</h3>
 
 					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
-					
+
 				
 					{% if deletion_insertion_timeline != -1 %}
 					<section id="four" class="major speical">
@@ -102,7 +102,7 @@
 						</div>
 						<script>displayHeatMap([
 
-							...JSON.parse(t)
+							...JSON.parse(`{{ deletion_insertion_timeline|safe }}`)
 							
 							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
 							;</script>

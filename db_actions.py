@@ -611,6 +611,7 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Large Text Insertion Detection*"] = large_insertion_check(the_pulse)
     return local_file_data, deletions_list, insertions_list
 
+
 def build_file_history(pulse, buildingMultiStudentArray = False):
     # Builds a JSON string of the pulse history for client-side processing
     fileHistory = ""

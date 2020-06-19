@@ -64,7 +64,7 @@ def __cumulative_list(the_list):
     return new_list
 
 
-def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
+def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity=True):
     """Change the granularity of a user actions over time
 
     Parameters
@@ -433,13 +433,14 @@ def comment_count(documentz):
     # comments, function, logic
     comments = []
     comment_num = 0
-    # print(general_pulse)
+    # print(documentz)
     for element in documentz:
+
         element = str(element)
-        comments.append(int(element.find(" // ")))
-        comments.append(int(element.find("/*")))
-        comments.append(int(element.find("# ")))
-        comments.append(int(element.find("<!--")))
+        comments.append(int(element.count(" // ")))
+        comments.append(int(element.count("/*")))
+        comments.append(int(element.count("# ")))
+        comments.append(int(element.count("<!--")))
 
     for i in comments:
         if i > 0:
@@ -500,7 +501,6 @@ def time_spent(timeline_list):
     sessions_list = []
     session = []
     number_of_days = 0
-    average_session_length = 0
     # If only one edit in a day
     if len(timeline_list) == 1:
         return {"Time Worked on Assigment": 5, "Number of Work Sessions": 1, "Over Number of Days": 1}
@@ -529,8 +529,13 @@ def time_spent(timeline_list):
         if total_time is None:
             total_time = current_time
         total_time = total_time + current_time
+    try:
+        average_session_length = str(total_time / len(sessions_list))
+    except TypeError:
+        average_session_length = total_time
+
     return {"Time Worked": str(total_time), "Number of Work Sessions": len(sessions_list),
-            "Over Number of Days": number_of_days, "Average Work Session Length": str(total_time / len(sessions_list))}
+            "Over Number of Days": number_of_days, "Average Work Session Length": average_session_length}
 
 
 def deletions_insertions(the_timeline, the_pulse) -> (int, int):
@@ -612,22 +617,21 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     return local_file_data, deletions_list, insertions_list
 
 
-
 def build_file_history(pulse, buildingMultiStudentArray = False):
     # Builds a JSON string of the pulse history for client-side processing
-    fileHistory = ""
+    file_history = ""
     if not buildingMultiStudentArray:
-        fileHistory = "["
+        file_history = "["
     for i in pulse:
         if(len(pulse[i][0]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + pulse[i][0][:1] + "\"},"
+            file_history += "{\"time\": \"" + i.isoformat() + "\", "
+            file_history += "\"o\": \"" + pulse[i][0][:1] + "\"},"
         if(len(pulse[i][1]) > 1):
-            fileHistory += "{\"time\": \"" + i.isoformat() + "\", "
-            fileHistory += "\"o\": \"" + pulse[i][1][:1] + "\"},"
+            file_history += "{\"time\": \"" + i.isoformat() + "\", "
+            file_history += "\"o\": \"" + pulse[i][1][:1] + "\"},"
     if not buildingMultiStudentArray:
-        fileHistory = fileHistory[:-1] + "]"
-    return fileHistory
+        file_history = file_history[:-1] + "]"
+    return file_history
 
 
 def all_data(db_file, file_namez):
@@ -666,9 +670,6 @@ def all_data(db_file, file_namez):
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
-
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-    
     deletion_insertion_timeline = build_file_history(the_pulse)
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
@@ -694,18 +695,18 @@ def multiple_database_get_data (db_filename_list):
 
     list_of_pulses = []
     deletion_insertion_timeline = {}
-    overallTimeLine = []
+    overall_time_line = []
     heatmaps = "["
 
     for db_file in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
-        overallTimeLine.extend(the_timeline)
+        overall_time_line.extend(the_timeline)
         list_of_pulses.append(the_pulse)
         heatmaps += build_file_history(the_pulse, True)
 
-    file_dat = time_spent(overallTimeLine)
+    file_dat = time_spent(overall_time_line)
 
     heatmaps = heatmaps[:-1] + "]"
 
@@ -722,7 +723,5 @@ def multiple_database_get_data (db_filename_list):
     the_timeline = list(many_student_pulse.keys())
     the_timeline.sort()
     graphs = all_pulses(the_timeline, many_student_pulse)
-    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
-
 
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat

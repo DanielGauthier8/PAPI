@@ -45,7 +45,7 @@
 					</section>
 					<section id="two" class="major special">
 						<div class="content" style="text-align: center">
-                     		<h3>Class Summary</h3>
+                     		<h2>Class Summary</h2>
 							<table>
                                     {% for key, value in file_dat.items() %}
 								<tr>
@@ -67,7 +67,7 @@
 
 					<section id="five" class="major special">
 						<div class="content" style="text-align: center">
-							<h3>File Trends</h3>
+							<h2>File Trends</h2>
 					<section id="four" class="major speical">
 						<h3>Heatmap</h3>
 						<p>Get insights into when your students are working the most</p>
@@ -90,12 +90,12 @@
 							])
 							;</script>
 					</section>
-<h2>Activity by Type</h2>
+						<h3>Activity by Type</h3>
 							<form method="post" action="#">
 								<table>
 									<tr>
 										<td>
-											<h3>Granularity</h3>
+											<h4>Granularity</h4>
 											<input type="radio" id="minute" name="granularity" value="minute" {{user_selection["minute"]}}>
 											<label for="minute">Minute</label><br>
 											<input type="radio" id="hour" name="granularity" value="hour" {{user_selection["hour"]}}>
@@ -104,7 +104,7 @@
 											<label for="day">Day</label>
 										</td>
 										<td>
-											<h3>Skip Non-working Time</h3>
+											<h4>Skip Non-working Time</h4>
 											<input type="radio" id="yes" name="skip_check" value="yes" {{user_selection["skip_no_activity"]}}>
 											<label for="yes">Yes</label><br>
 											<input type="radio" id="no" name="skip_check" value="no" {{user_selection["show_no_activity"]}}>
@@ -123,7 +123,7 @@
 						</div>
 					</section>
 
-					<hr />
+					<hr/>
 				</div>
 			</section>
 

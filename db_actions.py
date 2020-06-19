@@ -64,7 +64,7 @@ def __cumulative_list(the_list):
     return new_list
 
 
-def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity=True):
+def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity):
     """Change the granularity of a user actions over time
 
     Parameters
@@ -665,10 +665,11 @@ def all_data(db_file, file_namez):
     graphs = all_pulses(the_timeline, the_pulse)
 
 
+    the_timeline, graphs = time_graph_granularity(the_timeline, graphs, "hour")
+    
     deletion_insertion_timeline = build_file_history(the_pulse)
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
-
 
 def multiple_database_get_data (db_filename_list):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis

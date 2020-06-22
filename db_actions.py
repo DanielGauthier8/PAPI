@@ -198,7 +198,7 @@ def get_like_db(cursor, db_name, column, like_string):
     cursor: object
         Cursor object matching column values
     """
-    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE '%" + like_string + "%'")
+    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE "+ ' "%' + like_string + '%"')
     return cursor
 
 

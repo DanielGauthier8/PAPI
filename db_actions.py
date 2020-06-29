@@ -1,10 +1,11 @@
-import os
 import sqlite3
 import datetime
 import time
 import os
+import zipfile
 
 print("Running")
+
 
 def clear_old_files():
     databases = os.listdir("./databases")
@@ -14,10 +15,13 @@ def clear_old_files():
             # File is older than 10 days, delete to save hard drive space
             os.remove("./databases/" + file)
 
-# Autodelete older files at server startup
+
 clear_old_files()
+# Autodelete older files at server startup
 
 # ----------------------------------------Helper Functions
+
+
 def __remove_char_from_string(the_string, the_characters):
     for the_char in the_characters:
         the_string = the_string.replace(the_char, "")
@@ -133,10 +137,19 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity=T
 
             index += 1
 
-
     return user_selection, new_time_list, new_item_list
 
 
+def zip_dir(path, filename):
+    # Adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
+    zip_file = zipfile.ZipFile(filename + '.zip', 'w', zipfile.ZIP_DEFLATED)
+
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            zip_file.write(os.path.join(root, file))
+
+    zip_file.close()
 # ----------------------------------------Database Management
 
 
@@ -198,7 +211,7 @@ def get_like_db(cursor, db_name, column, like_string):
     cursor: object
         Cursor object matching column values
     """
-    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE "+ ' "%' + like_string + '%"')
+    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE " + ' "%' + like_string + '%"')
     return cursor
 
 
@@ -370,7 +383,7 @@ def all_pulses(the_timeline, the_pulse):
     operation_list = []
     output_list = []
     for element in the_timeline:
-        comments_list.append(the_pulse[element][0].count("//") +
+        comments_list.append(the_pulse[element][0].count("// ") +
                              the_pulse[element][0].count("/*"))
 
         logic_list.append(the_pulse[element][0].count("if") +
@@ -437,7 +450,7 @@ def comment_count(documentz):
     for element in documentz:
 
         element = str(element)
-        comments.append(int(element.count(" // ")))
+        comments.append(int(element.count("// ")))
         comments.append(int(element.count("/*")))
         comments.append(int(element.count("# ")))
         comments.append(int(element.count("<!--")))
@@ -568,14 +581,14 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
         # print(operation_string[0])
         # print(operation_string)
         if len(the_pulse[operation_string][0]) > 1:
-            insertions += 1
-            insertions_list.append(1)
+            insertions += len(the_pulse[operation_string][0])
+            insertions_list.append(the_pulse[operation_string][0])
         else:
             insertions_list.append(0)
 
         if len(the_pulse[operation_string][1]) > 1:
-            deletions += 1
-            deletions_list.append(1)
+            deletions += len(the_pulse[operation_string][1])
+            deletions_list.append(len(the_pulse[operation_string][1]))
         else:
             deletions_list.append(0)
 
@@ -623,10 +636,10 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
     if not buildingMultiStudentArray:
         file_history = "["
     for i in pulse:
-        if(len(pulse[i][0]) > 1):
+        if len(pulse[i][0]) > 1:
             file_history += "{\"time\": \"" + i.isoformat() + "\", "
             file_history += "\"o\": \"" + pulse[i][0][:1] + "\"},"
-        if(len(pulse[i][1]) > 1):
+        if len(pulse[i][1]) > 1:
             file_history += "{\"time\": \"" + i.isoformat() + "\", "
             file_history += "\"o\": \"" + pulse[i][1][:1] + "\"},"
     if not buildingMultiStudentArray:
@@ -674,6 +687,7 @@ def all_data(db_file, file_namez):
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
+
 def multiple_database_get_data (db_filename_list):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis
 
@@ -698,7 +712,7 @@ def multiple_database_get_data (db_filename_list):
     overall_time_line = []
     heatmaps = "["
 
-    for db_file in db_filename_list:
+    for db_file, true_filename in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
@@ -725,3 +739,25 @@ def multiple_database_get_data (db_filename_list):
     graphs = all_pulses(the_timeline, many_student_pulse)
 
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat
+
+
+def download_generation(db_filename_list):
+    print(db_filename_list[len(db_filename_list) - 1][0])
+    download_path = os.path.join("report_generation", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
+    try:
+        os.mkdir(download_path)
+    except FileExistsError:
+        print("File already exists")
+
+    for db_file, true_filename in db_filename_list:
+        cursor = set_cursor(db_file)
+        cursor = clean_up(cursor)
+        file_namez = all_files(cursor)
+        file_dat, graphs, the_timeline, deletion_insertion_timeline = all_data(db_file, file_namez)
+
+        with open(os.path.join(download_path, true_filename) + ".txt", "w") as file:
+            file.write(str(file_dat))
+    zip_path = os.path.join("static", "zipped_exports", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
+    zip_dir(download_path, zip_path)
+
+    return os.path.join("..", (zip_path + ".zip"))

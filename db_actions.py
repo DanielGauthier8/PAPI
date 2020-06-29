@@ -10,9 +10,10 @@ def clear_old_files():
     databases = os.listdir("./databases")
     # print(databases)
     for i, file, in enumerate(databases):
-        if datetime.datetime.strptime(time.ctime(os.stat("./databases/" + file).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
+        if datetime.datetime.strptime(time.ctime(os.stat(os.path.join("./databases/", file)).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
             # File is older than 10 days, delete to save hard drive space
-            os.remove("./databases/" + file)
+            if file is not ".gitkeep":
+                os.remove(os.path.join("./databases/", file))
 
 # Autodelete older files at server startup
 clear_old_files()

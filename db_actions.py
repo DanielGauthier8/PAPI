@@ -22,6 +22,18 @@ clear_old_files()
 # ----------------------------------------Helper Functions
 
 
+def heading(true_filename, the_canvas, the_letter):
+    width, height = the_letter
+    the_canvas.setFont('Courier', 14)
+    the_canvas.drawString(30, 750, 'PAPI Student Feedback')
+    the_canvas.drawString(30, 735, 'University of Rhode Island')
+    the_canvas.drawString(370, 750, "Date Generated: " + str(datetime.date.today()))
+    the_canvas.setFont('Courier', 12)
+    the_canvas.drawString(30, 683, 'Name:')
+    the_canvas.line(0, 680, width, 680)
+    the_canvas.drawString(120, 683, true_filename)
+
+
 def __remove_char_from_string(the_string, the_characters):
     for the_char in the_characters:
         the_string = the_string.replace(the_char, "")
@@ -621,8 +633,8 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    local_file_data["Number of Deletion Chunks*"] = deletions
-    local_file_data["Number of Insertion Chunks*"] = insertions
+    local_file_data["Number of Deletion Characters"] = deletions
+    local_file_data["Number of Insertion Characters"] = insertions
 
     local_file_data["Number of Comments*"] = comment_count(documentz_info(the_cursor, file_namez, "file_contents"))
 
@@ -741,7 +753,7 @@ def multiple_database_get_data (db_filename_list):
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat
 
 
-def download_generation(db_filename_list):
+def download_generation(db_filename_list, outter_canvas, letter):
     print(db_filename_list[len(db_filename_list) - 1][0])
     download_path = os.path.join("report_generation", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     try:
@@ -755,8 +767,43 @@ def download_generation(db_filename_list):
         file_namez = all_files(cursor)
         file_dat, graphs, the_timeline, deletion_insertion_timeline = all_data(db_file, file_namez)
 
-        with open(os.path.join(download_path, true_filename) + ".txt", "w") as file:
-            file.write(str(file_dat))
+        the_canvas = outter_canvas.Canvas(os.path.join(download_path, true_filename) + ".pdf", pagesize=letter)
+        the_canvas.setLineWidth(.3)
+        heading(true_filename, the_canvas, letter)
+        start_y = 650
+        gap = 350
+        the_canvas.drawString(30, start_y, "File Name(s)")
+        for files in file_namez:
+            the_canvas.drawString(30 + gap, start_y, files)
+            start_y -= 20
+            if start_y < 40:
+                the_canvas.showPage()
+                heading(true_filename, the_canvas, letter)
+                start_y = 650
+
+        for key, value in file_dat.items():
+            if len(str(value)) < 20:
+                the_canvas.drawString(30, start_y, str(key))
+                the_canvas.drawString(30 + gap, start_y, str(value))
+                start_y -= 20
+                the_canvas.drawString
+            if key == "Large Text Insertion Detection*" and value == -1:
+                the_canvas.drawString(30, start_y, str(key))
+                the_canvas.drawString(30 + gap, start_y, "False")
+                start_y -= 20
+
+        the_canvas.drawString(30, start_y, "Large Text Insertion Detection*")
+        start_y -= 20
+        for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
+            the_canvas.drawString(30 + (gap / 2), start_y, one_instance_key)
+            the_canvas.drawString(30 + gap, start_y, one_instance_value)
+            start_y -= 20
+            if start_y < 40:
+                the_canvas.showPage()
+                heading(true_filename, the_canvas, letter)
+                start_y = 650
+
+        the_canvas.save()
     zip_path = os.path.join("static", "zipped_exports", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     zip_dir(download_path, zip_path)
 

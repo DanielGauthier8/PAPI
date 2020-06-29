@@ -1,8 +1,8 @@
-import time
 import datetime
 import os
 import secrets
-
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 
@@ -144,7 +144,7 @@ def file_analysis(token):
 @app.route('/file_analysis_many/<token>', methods=['GET', 'POST'])
 def file_analysis_many(token):
     db_actions.clear_old_files()
-    zip_path = db_actions.download_generation(session[token])
+    zip_path = db_actions.download_generation(session[token], canvas, letter)
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
         multiple_database_get_data(session[token])
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)

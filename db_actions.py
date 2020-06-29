@@ -147,7 +147,7 @@ def zip_dir(path, filename):
     # ziph is zipfile handle
     for root, dirs, files in os.walk(path):
         for file in files:
-            zip_file.write(os.path.join(root, file))
+            zip_file.write(os.path.join(root, file), arcname=file)
 
     zip_file.close()
 # ----------------------------------------Database Management

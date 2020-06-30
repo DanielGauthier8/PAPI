@@ -1,8 +1,50 @@
 from datetime import date
 
+from reportlab.graphics import renderPDF
+from reportlab.graphics.charts.lineplots import LinePlot
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.widgets.markers import makeMarker
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.colors import PCMYKColor, PCMYKColorSep, Color, purple, blue, red, gray, green, black
 from reportlab.pdfgen import canvas
 import db_actions
+
+
+def sample(the_timeline, graphs):
+    """Shows basic use of a line chart."""
+    data = []
+    the_max = 0
+    for graph in graphs:
+        if max(graph) > the_max:
+            the_max = max(graph)
+        new_list = [(i, graph[i]) for i in range(0, len(the_timeline))]      # str(the_timeline[i])
+        data.append(new_list)
+    drawing = Drawing(500, 300)
+    lp = LinePlot()
+    lp.height = 300
+    width, height = letter
+    lp.width = width - 80
+    lp.data = data
+    # lp.lineLabelFormat = '%2.0f'
+    lp.strokeColor = colors.black
+    # comments, logic, operations, output
+    lp.lines[0].strokeColor = colors.green
+    lp.lines[0].symbol = makeMarker('FilledCircle')
+    lp.lines[1].strokeColor = colors.blue
+    lp.lines[1].symbol = makeMarker('FilledCircle')
+    lp.lines[2].strokeColor = colors.purple
+    lp.lines[2].symbol = makeMarker('FilledCircle')
+    lp.lines[3].strokeColor = colors.red
+    lp.lines[3].symbol = makeMarker('FilledCircle')
+    # lp.xValueAxis.valueMin = 0
+    # lp.xValueAxis.valueMax = 5
+    # lp.xValueAxis.valueStep = 1
+    lp.yValueAxis.valueMin = 0
+    lp.yValueAxis.valueMax = the_max + 30
+    # lp.yValueAxis.valueStep = 1
+    drawing.add(lp)
+    return drawing
 
 
 def helper(file):
@@ -42,15 +84,14 @@ def heading(canvas, letter):
 
 
 def main(canvas):
-    cursor = db_actions.set_cursor("./databases/7bT48DZyuHxGz0WGDJB-0A")
+    cursor = db_actions.set_cursor("./databases/oyXF9KjTth6bEhZ4UDackQ")
     cursor = db_actions.clean_up(cursor)
     file_namez = db_actions.all_files(cursor)
-    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data("./databases/7bT48DZyuHxGz0WGDJB-0A", file_namez)
+    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data("./databases/oyXF9KjTth6bEhZ4UDackQ", file_namez)
     canvas = canvas.Canvas("form.pdf", pagesize=letter)
     canvas.setLineWidth(.3)
     heading(canvas, letter)
     start_y = 650
-    start_x = 200
     gap = 350
     canvas.drawString(30, start_y, "File Name(s)")
     for files in file_namez:
@@ -76,12 +117,23 @@ def main(canvas):
     start_y -= 20
     for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
         canvas.drawString(30 + (gap/2), start_y, one_instance_key)
-        canvas.drawString(30 + (gap), start_y, one_instance_value)
+        canvas.drawString(30 + gap, start_y, one_instance_value)
         start_y -= 20
         if start_y < 40:
             canvas.showPage()
             heading(canvas,letter)
             start_y = 650
+    user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
+                                                                             'day')
+    drawing = sample(the_timeline, graphs)
+    canvas.setFont('Courier-Bold', 14)
+    start_y -= 20
+    canvas.showPage()
+    width, height = letter
+    heading(canvas, letter)
+    canvas.drawString((width/2)-50, 650, "ACTIVITY BY TYPE")
+    renderPDF.draw(drawing, canvas, 30, 320, showBoundary=False)
+
 
     canvas.save()
 

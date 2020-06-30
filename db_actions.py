@@ -5,9 +5,13 @@ import os
 import zipfile
 
 from reportlab.graphics import renderPDF
-from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.lineplots import LinePlot
+from reportlab.lib import colors
+from reportlab.lib.colors import purple, blue, red, gray, green, black
 from reportlab.graphics.charts.linecharts import HorizontalLineChart
+from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.widgets.markers import makeMarker
+from reportlab.lib.pagesizes import letter
 
 print("Running")
 
@@ -22,32 +26,68 @@ def clear_old_files():
 
 
 clear_old_files()
-# Autodelete older files at server startup
+# Auto-delete older files at server startup
 
 # ----------------------------------------Helper Functions
 
 
-def graphout(the_x, the_y):
-    new_x=[]
-    for i in the_x:
-        new_x.append(str(i))
-    drawing = Drawing(400, 200)
-    lc = HorizontalLineChart()
-    lc.x = 30
-    lc.y = 50
-    lc.height = 125
-    lc.width = 350
-    lc.data = the_y
-    lc.categoryAxis.categoryNames = new_x
-    lc.categoryAxis.labels.boxAnchor = 'n'
-    lc.valueAxis.valueMin = 0
-    lc.valueAxis.valueMax = 1500
-    lc.valueAxis.valueStep = 300
-    lc.lines[0].strokeWidth = 2
-    lc.lines[0].symbol = makeMarker('FilledCircle') # added to make filled circles.
-    lc.lines[1].strokeWidth = 1.5
-    drawing.add(lc)
+def graph_out(the_timeline, graphs):
+    """Shows basic use of a line chart."""
+    data = []
+    the_max = 0
+    for graph in graphs:
+        if max(graph) > the_max:
+            the_max = max(graph)
+        new_list = [(i, graph[i]) for i in range(0, len(the_timeline))]  # str(the_timeline[i])
+        data.append(new_list)
+    drawing = Drawing(500, 300)
+    lp = LinePlot()
+    lp.height = 300
+    width, height = letter
+    lp.width = width - 80
+    lp.data = data
+    # lp.lineLabelFormat = '%2.0f'
+    lp.strokeColor = colors.black
+    # comments, logic, operations, output
+    lp.lines[0].strokeColor = colors.green
+    lp.lines[0].symbol = makeMarker('FilledCircle')
+    lp.lines[1].strokeColor = colors.blue
+    lp.lines[1].symbol = makeMarker('FilledCircle')
+    lp.lines[2].strokeColor = colors.purple
+    lp.lines[2].symbol = makeMarker('FilledCircle')
+    lp.lines[3].strokeColor = colors.red
+    lp.lines[3].symbol = makeMarker('FilledCircle')
+    # lp.xValueAxis.valueMin = 0
+    # lp.xValueAxis.valueMax = 5
+    # lp.xValueAxis.valueStep = 1
+    lp.yValueAxis.valueMin = 0
+    lp.yValueAxis.valueMax = the_max + 30
+    # lp.yValueAxis.valueStep = 1
+    drawing.add(lp)
     return drawing
+
+
+def make_legend (the_canvas):
+    start_y = 300
+    the_canvas.setFillColor(gray)
+    the_canvas.rect(150, 230, 300, 80, fill=True, stroke=True)
+    the_canvas.setFillColor(green)
+    the_canvas.rect(180, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(160, start_y, "Comments")
+    the_canvas.setFillColor(blue)
+    the_canvas.rect(250, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(240, start_y, "Logic")
+    the_canvas.setFillColor(purple)
+    the_canvas.rect(320, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(295, start_y, "Operations")
+    the_canvas.setFillColor(red)
+    the_canvas.rect(390, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(380, start_y, "Output")
+
 
 def heading(true_filename, the_canvas, the_letter):
     width, height = the_letter
@@ -183,7 +223,6 @@ def zip_dir(path, filename):
     # Adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
     zip_file = zipfile.ZipFile(filename + '.zip', 'w', zipfile.ZIP_DEFLATED)
 
-    # ziph is zipfile handle
     for root, dirs, files in os.walk(path):
         for file in files:
             zip_file.write(os.path.join(root, file), arcname=file)
@@ -853,8 +892,18 @@ def download_generation(db_filename_list, outter_canvas, letter):
                     heading(true_filename, the_canvas, letter)
                     start_y = 650
 
-        drawing = graphout(the_timeline, graphs[0])
-        # renderPDF.draw(drawing, the_canvas, 10, 400, showBoundary=False)
+        user_selection, the_timeline, graphs = time_graph_granularity(the_timeline, graphs,
+                                                                                 'day')
+        drawing = graph_out(the_timeline, graphs)
+        the_canvas.setFont('Courier-Bold', 14)
+        start_y -= 20
+        the_canvas.showPage()
+        width, height = letter
+        heading(true_filename, the_canvas, letter)
+        the_canvas.drawString((width / 2) - 50, 650, "ACTIVITY BY TYPE")
+        renderPDF.draw(drawing, the_canvas, 30, 320, showBoundary=False)
+        make_legend(the_canvas)
+
         the_canvas.save()
     zip_path = os.path.join("static", "zipped_exports", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     zip_dir(download_path, zip_path)

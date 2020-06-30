@@ -103,6 +103,8 @@ def results(token):
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor)
 
+    file_bounds = db_actions.documentBounds(cursor)
+
     if token not in session:
         session[token] = None
     session[token] = db_actions.all_files(cursor)
@@ -111,8 +113,11 @@ def results(token):
         temp = request.form.getlist('chosen_files')
         if "All Files" not in str(temp):
             session[token] = temp
+        if request.form['start'] is not "na":
+            db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
+
         return redirect(url_for('file_analysis', token=token))
-    return render_template('student_info.html', files_list=session[token])
+    return render_template('student_info.html', files_list=session[token], file_bounds=file_bounds)
 
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])

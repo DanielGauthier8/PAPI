@@ -180,6 +180,40 @@ def clean_up(cursor):
     cursor.execute('DROP TABLE IF EXISTS Environments')
     return cursor
 
+def documentBounds(cursor):
+    """Returns the dates of the first and last events in the `Documents` table
+
+    """
+    return [
+        cursor.execute("SELECT created_at FROM Documents ORDER BY created_at ASC LIMIT 1;").fetchone(),
+        cursor.execute("SELECT created_at FROM Documents ORDER BY created_at DESC LIMIT 1;").fetchone()
+    ]
+
+def chopDocument(file_name, start, end, mode):
+    """Got too much data? Use the chopatron 3000! Recommened by Gordan Ramsey! 
+
+    """
+
+    cursor = set_cursor(file_name)
+
+    if mode:
+        # Copy the file history to restore later
+
+        cursor.execute("CREATE TABLE DocumentsOrg AS SELECT * FROM Documents")
+    
+        # Choppy! Choppy! 
+
+        cursor.execute("DELETE FROM Documents WHERE created_at < " + '"' + start +  '"')
+        cursor.execute("DELETE FROM Documents WHERE created_at > " + '"' + end +  '"')
+
+        return
+    else:
+        cursor.execute("DROP TABLE Documents; ")
+        cursor.execute("SELECT * INTO DocumentsOrg FROM DOCUMENTS WHERE 1=1")
+        cursor.execute("DROP TABLE DocumentsOrg; ")
+
+
+
 
 def get_like_db(cursor, db_name, column, like_string):
     """Gets any db row with specific column value

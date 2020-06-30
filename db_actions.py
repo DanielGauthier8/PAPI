@@ -669,7 +669,6 @@ def all_data(db_file, file_namez, start, end):
     """
     # Returns all file metadata
     cursor = set_cursor(db_file)
-    print(start)
     cursor = clean_up(cursor, start, end)
 
     file_dat = {}
@@ -690,7 +689,7 @@ def all_data(db_file, file_namez, start, end):
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
-def multiple_database_get_data (db_filename_list):
+def multiple_database_get_data (db_filename_list, start, end):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis
 
         Parameters
@@ -716,7 +715,7 @@ def multiple_database_get_data (db_filename_list):
 
     for db_file in db_filename_list:
         cursor = set_cursor(db_file)
-        cursor = clean_up(cursor)
+        cursor = clean_up(cursor, start, end)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
         overall_time_line.extend(the_timeline)
         list_of_pulses.append(the_pulse)

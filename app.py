@@ -152,7 +152,7 @@ def file_analysis(token):
 def file_analysis_many(token):
     # TODO: Add deletion insertion timeline
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
-        multiple_database_get_data(session[token])
+        multiple_database_get_data(session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
     if request.method == 'POST':

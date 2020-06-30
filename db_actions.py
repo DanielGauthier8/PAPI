@@ -4,6 +4,11 @@ import time
 import os
 import zipfile
 
+from reportlab.graphics import renderPDF
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.linecharts import HorizontalLineChart
+from reportlab.graphics.widgets.markers import makeMarker
+
 print("Running")
 
 
@@ -21,6 +26,28 @@ clear_old_files()
 
 # ----------------------------------------Helper Functions
 
+
+def graphout(the_x, the_y):
+    new_x=[]
+    for i in the_x:
+        new_x.append(str(i))
+    drawing = Drawing(400, 200)
+    lc = HorizontalLineChart()
+    lc.x = 30
+    lc.y = 50
+    lc.height = 125
+    lc.width = 350
+    lc.data = the_y
+    lc.categoryAxis.categoryNames = new_x
+    lc.categoryAxis.labels.boxAnchor = 'n'
+    lc.valueAxis.valueMin = 0
+    lc.valueAxis.valueMax = 1500
+    lc.valueAxis.valueStep = 300
+    lc.lines[0].strokeWidth = 2
+    lc.lines[0].symbol = makeMarker('FilledCircle') # added to make filled circles.
+    lc.lines[1].strokeWidth = 1.5
+    drawing.add(lc)
+    return drawing
 
 def heading(true_filename, the_canvas, the_letter):
     width, height = the_letter
@@ -772,7 +799,9 @@ def download_generation(db_filename_list, outter_canvas, letter):
         heading(true_filename, the_canvas, letter)
         start_y = 650
         gap = 350
+        the_canvas.setFont('Courier-Bold', 12)
         the_canvas.drawString(30, start_y, "File Name(s)")
+        the_canvas.setFont('Courier', 12)
         for files in file_namez:
             the_canvas.drawString(30 + gap, start_y, files)
             start_y -= 20
@@ -783,26 +812,49 @@ def download_generation(db_filename_list, outter_canvas, letter):
 
         for key, value in file_dat.items():
             if len(str(value)) < 20:
+                the_canvas.setFont('Courier-Bold', 12)
                 the_canvas.drawString(30, start_y, str(key))
+                the_canvas.setFont('Courier', 12)
                 the_canvas.drawString(30 + gap, start_y, str(value))
                 start_y -= 20
                 the_canvas.drawString
             if key == "Large Text Insertion Detection*" and value == -1:
+                the_canvas.setFont('Courier-Bold', 12)
                 the_canvas.drawString(30, start_y, str(key))
+                the_canvas.setFont('Courier', 12)
                 the_canvas.drawString(30 + gap, start_y, "False")
                 start_y -= 20
-
-        the_canvas.drawString(30, start_y, "Large Text Insertion Detection*")
-        start_y -= 20
-        for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
-            the_canvas.drawString(30 + (gap / 2), start_y, one_instance_key)
-            the_canvas.drawString(30 + gap, start_y, one_instance_value)
-            start_y -= 20
             if start_y < 40:
                 the_canvas.showPage()
                 heading(true_filename, the_canvas, letter)
                 start_y = 650
+        the_canvas.setFont('Courier-Bold', 12)
+        the_canvas.drawString(30, start_y, "Large Text Insertion Detection*")
+        start_y -= 20
+        if file_dat["Large Text Insertion Detection*"] != -1:
+            for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
+                the_canvas.setFont('Courier-Bold', 12)
+                the_canvas.drawString(30 + 10, start_y, one_instance_key)
+                start_y -= 20
+                split_values = one_instance_value.split("    ")
+                for j in split_values:
+                    chunk_size = 60
+                    for one_line in range(0,len(j),60):
+                        the_canvas.setFont('Courier', 12)
+                        the_canvas.drawString(30 + 20, start_y, j[one_line:one_line+60])
+                        start_y -= 20
+                        if start_y < 40:
+                            the_canvas.showPage()
+                            heading(true_filename, the_canvas, letter)
+                            start_y = 650
+                start_y -= 20
+                if start_y < 40:
+                    the_canvas.showPage()
+                    heading(true_filename, the_canvas, letter)
+                    start_y = 650
 
+        drawing = graphout(the_timeline, graphs[0])
+        # renderPDF.draw(drawing, the_canvas, 10, 400, showBoundary=False)
         the_canvas.save()
     zip_path = os.path.join("static", "zipped_exports", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     zip_dir(download_path, zip_path)

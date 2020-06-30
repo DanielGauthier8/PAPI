@@ -159,7 +159,7 @@ def set_cursor(filename):
     return cursor
 
 
-def clean_up(cursor):
+def clean_up(cursor, start, end):
     """Removes private/undesired data from provided db
 
     Parameters
@@ -178,6 +178,11 @@ def clean_up(cursor):
     cursor.execute('DROP TABLE IF EXISTS ChatMessages')
     # STEP 4: "DROP TABLE Environments"
     cursor.execute('DROP TABLE IF EXISTS Environments')
+
+    if start and end and start != "na":
+        cursor.execute("DELETE FROM Documents WHERE created_at < " + '"' + start +  '"')
+        cursor.execute("DELETE FROM Documents WHERE created_at > " + '"' + end +  '"')
+
     return cursor
 
 def documentBounds(cursor):
@@ -188,31 +193,6 @@ def documentBounds(cursor):
         cursor.execute("SELECT created_at FROM Documents ORDER BY created_at ASC LIMIT 1;").fetchone(),
         cursor.execute("SELECT created_at FROM Documents ORDER BY created_at DESC LIMIT 1;").fetchone()
     ]
-
-def chopDocument(file_name, start, end, mode):
-    """Got too much data? Use the chopatron 3000! Recommened by Gordan Ramsey! 
-
-    """
-
-    cursor = set_cursor(file_name)
-
-    if mode:
-        # Copy the file history to restore later
-
-        cursor.execute("CREATE TABLE DocumentsOrg AS SELECT * FROM Documents")
-    
-        # Choppy! Choppy! 
-
-        cursor.execute("DELETE FROM Documents WHERE created_at < " + '"' + start +  '"')
-        cursor.execute("DELETE FROM Documents WHERE created_at > " + '"' + end +  '"')
-
-        return
-    else:
-        cursor.execute("DROP TABLE Documents; ")
-        cursor.execute("SELECT * INTO DocumentsOrg FROM DOCUMENTS WHERE 1=1")
-        cursor.execute("DROP TABLE DocumentsOrg; ")
-
-
 
 
 def get_like_db(cursor, db_name, column, like_string):
@@ -669,7 +649,7 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
     return file_history
 
 
-def all_data(db_file, file_namez):
+def all_data(db_file, file_namez, start, end):
     """Calls all required helper functions to get all metadata
 
     Parameters
@@ -689,7 +669,8 @@ def all_data(db_file, file_namez):
     """
     # Returns all file metadata
     cursor = set_cursor(db_file)
-    # cursor = clean_up(cursor)
+    print(start)
+    cursor = clean_up(cursor, start, end)
 
     file_dat = {}
 

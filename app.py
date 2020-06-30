@@ -101,7 +101,7 @@ def upload_files():
 def results(token):
     time.sleep(1)
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
-    cursor = db_actions.clean_up(cursor)
+    cursor = db_actions.clean_up(cursor, False, False)
 
     file_bounds = db_actions.documentBounds(cursor)
 
@@ -114,16 +114,18 @@ def results(token):
         if "All Files" not in str(temp):
             session[token] = temp
         if request.form['start'] is not "na":
-            db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
+            cursor = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
 
-        return redirect(url_for('file_analysis', token=token))
+            # db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
+
+        return redirect(url_for('file_analysis', token=token) + "?start=" + request.form['start'] + "&end=" + request.form['end'])
     return render_template('student_info.html', files_list=session[token], file_bounds=file_bounds)
 
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
-        all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+        all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
     if request.method == 'POST':
@@ -133,7 +135,7 @@ def file_analysis(token):
             skip_empty = True
 
         file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
-            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token, request.args.get('start'), request.args.get('end')), session[token])
 
         user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
                                                                                  request.form['granularity'],

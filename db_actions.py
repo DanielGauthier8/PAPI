@@ -8,7 +8,6 @@ from reportlab.graphics import renderPDF
 from reportlab.graphics.charts.lineplots import LinePlot
 from reportlab.lib import colors
 from reportlab.lib.colors import purple, blue, red, gray, green, black
-from reportlab.graphics.charts.linecharts import HorizontalLineChart
 from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.widgets.markers import makeMarker
 from reportlab.lib.pagesizes import letter

@@ -101,7 +101,7 @@ def upload_files():
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
-    cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
+    cursor, conn = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor, False, False)
 
     file_bounds = db_actions.documentBounds(cursor)
@@ -115,7 +115,7 @@ def results(token):
         if "All Files" not in str(temp):
             session[token] = temp
         if request.form['start'] is not "na":
-            cursor = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
+            cursor, conn = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
 
             # db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
 
@@ -153,11 +153,10 @@ def file_analysis(token):
 @app.route('/file_analysis_many/<token>', methods=['GET', 'POST'])
 def file_analysis_many(token):
     db_actions.clear_old_files()
-    zip_path = db_actions.download_generation(session[token], canvas, letter)
+    zip_path = db_actions.download_generation(session[token], canvas, letter, request.args.get('start'), request.args.get('end'))
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
         multiple_database_get_data(session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
-
     if request.method == 'POST':
         if request.form['skip_check'] is "no":
             skip_empty = False

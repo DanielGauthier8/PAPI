@@ -1,3 +1,4 @@
+import shutil
 import sqlite3
 import datetime
 import time
@@ -16,13 +17,18 @@ print("Running")
 
 
 def clear_old_files():
-    databases = os.listdir("./databases")
-    # print(databases)
-    for i, file, in enumerate(databases):
-        if datetime.datetime.strptime(time.ctime(os.stat(os.path.join("./databases/", file)).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
-            # File is older than 10 days, delete to save hard drive space
-            if file is not ".gitkeep":
-                os.remove(os.path.join("./databases/", file))
+    locations = ["./databases", "./report_generation", os.path.join("./static", "zipped_exports")]
+    for folder in locations:
+        databases = os.listdir(folder)
+        # print(databases)
+        for i, file, in enumerate(databases):
+            if datetime.datetime.strptime(time.ctime(os.stat(os.path.join(folder, file)).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(minutes=15) < datetime.datetime.now():
+                # File is older than 15 minutes, delete to save hard drive space
+                if ".gitkeep" not in file:
+                    try:
+                        os.remove(os.path.join(folder, file))
+                    except IsADirectoryError:
+                        shutil.rmtree(os.path.join(folder, file))
 
 
 clear_old_files()
@@ -246,7 +252,7 @@ def set_cursor(filename):
     """
     conn = sqlite3.connect(filename)
     cursor = conn.cursor()
-    return cursor
+    return cursor, conn
 
 
 def clean_up(cursor, start, end):
@@ -275,6 +281,7 @@ def clean_up(cursor, start, end):
 
     return cursor
 
+
 def documentBounds(cursor):
     """Returns the dates of the first and last events in the `Documents` table
 
@@ -283,6 +290,7 @@ def documentBounds(cursor):
         cursor.execute("SELECT created_at FROM Documents ORDER BY created_at ASC LIMIT 1;").fetchone(),
         cursor.execute("SELECT created_at FROM Documents ORDER BY created_at DESC LIMIT 1;").fetchone()
     ]
+
 
 def determineIfFileInBounds(cursor, filename):
     """ Determines if a file is to be included in data based on date restrictions
@@ -767,7 +775,7 @@ def all_data(db_file, files, start, end):
         Chronolical list of all dates
     """
     # Returns all file metadata
-    cursor = set_cursor(db_file)
+    cursor, conn = set_cursor(db_file)
     cursor = clean_up(cursor, start, end)
 
     file_dat = {}
@@ -784,6 +792,8 @@ def all_data(db_file, files, start, end):
     time_data = time_spent(the_timeline)
     file_dat = {**file_dat, **time_data}
     meta_data, deletions_list, insertions_list = get_meta_data(cursor, the_timeline, the_pulse, file_namez)
+    cursor.close()
+    conn.close()
     file_dat = {**file_dat, **meta_data}
     graphs = all_pulses(the_timeline, the_pulse)
 
@@ -817,9 +827,11 @@ def multiple_database_get_data (db_filename_list, start, end):
     heatmaps = "["
 
     for db_file, true_filename in db_filename_list:
-        cursor = set_cursor(db_file)
+        cursor, conn = set_cursor(db_file)
         cursor = clean_up(cursor, start, end)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
+        cursor.close()
+        conn.close()
         overall_time_line.extend(the_timeline)
         list_of_pulses.append(the_pulse)
         heatmaps += build_file_history(the_pulse, True)
@@ -845,7 +857,7 @@ def multiple_database_get_data (db_filename_list, start, end):
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat
 
 
-def download_generation(db_filename_list, outter_canvas, letter):
+def download_generation(db_filename_list, outter_canvas, letter, start, end):
     print(db_filename_list[len(db_filename_list) - 1][0])
     download_path = os.path.join("report_generation", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     try:
@@ -854,10 +866,12 @@ def download_generation(db_filename_list, outter_canvas, letter):
         print("File already exists")
 
     for db_file, true_filename in db_filename_list:
-        cursor = set_cursor(db_file)
-        cursor = clean_up(cursor)
+        cursor, conn = set_cursor(db_file)
+        cursor = clean_up(cursor,  start, end)
         file_namez = all_files(cursor)
-        file_dat, graphs, the_timeline, deletion_insertion_timeline = all_data(db_file, file_namez)
+        cursor.close()
+        conn.close()
+        file_dat, graphs, the_timeline, deletion_insertion_timeline = all_data(db_file, file_namez, start, end)
 
         the_canvas = outter_canvas.Canvas(os.path.join(download_path, true_filename) + ".pdf", pagesize=letter)
         the_canvas.setLineWidth(.3)

@@ -20,9 +20,10 @@ def clear_old_files():
     databases = os.listdir("./databases")
     # print(databases)
     for i, file, in enumerate(databases):
-        if datetime.datetime.strptime(time.ctime(os.stat("./databases/" + file).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
+        if datetime.datetime.strptime(time.ctime(os.stat(os.path.join("./databases/", file)).st_atime), "%a %b %d %H:%M:%S %Y") + datetime.timedelta(days= 10) < datetime.datetime.now():
             # File is older than 10 days, delete to save hard drive space
-            os.remove("./databases/" + file)
+            if file is not ".gitkeep":
+                os.remove(os.path.join("./databases/", file))
 
 
 clear_old_files()
@@ -249,7 +250,7 @@ def set_cursor(filename):
     return cursor
 
 
-def clean_up(cursor):
+def clean_up(cursor, start, end):
     """Removes private/undesired data from provided db
 
     Parameters
@@ -268,7 +269,29 @@ def clean_up(cursor):
     cursor.execute('DROP TABLE IF EXISTS ChatMessages')
     # STEP 4: "DROP TABLE Environments"
     cursor.execute('DROP TABLE IF EXISTS Environments')
+
+    if start and end and start != "na":
+        cursor.execute("DELETE FROM Documents WHERE created_at < " + '"' + start +  '"')
+        cursor.execute("DELETE FROM Documents WHERE created_at > " + '"' + end +  '"')
+
     return cursor
+
+def documentBounds(cursor):
+    """Returns the dates of the first and last events in the `Documents` table
+
+    """
+    return [
+        cursor.execute("SELECT created_at FROM Documents ORDER BY created_at ASC LIMIT 1;").fetchone(),
+        cursor.execute("SELECT created_at FROM Documents ORDER BY created_at DESC LIMIT 1;").fetchone()
+    ]
+
+def determineIfFileInBounds(cursor, filename):
+    """ Determines if a file is to be included in data based on date restrictions
+
+    """
+    if cursor.execute("SELECT path FROM Documents WHERE path = \"" + filename + "\" LIMIT 1;").fetchone() is not None:
+        return True
+    return False
 
 
 def get_like_db(cursor, db_name, column, like_string):
@@ -326,8 +349,8 @@ def document_info(cursor, file_name, lookup_item):
         fetch = __db_string_to_array(fetch)
     if index == 15:
         fetch = len(fetch)
-
     return fetch
+
 
 
 def documentz_info(cursor, file_namez, lookup_item):
@@ -431,6 +454,7 @@ def gather_many(cursor, files):
     for file_name in files:
         gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
+
 
     # many_file_pulses = sorted(many_file_pulses)
     the_timeline = list(many_file_pulses.keys())
@@ -725,7 +749,7 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
     return file_history
 
 
-def all_data(db_file, file_namez):
+def all_data(db_file, files, start, end):
     """Calls all required helper functions to get all metadata
 
     Parameters
@@ -745,13 +769,16 @@ def all_data(db_file, file_namez):
     """
     # Returns all file metadata
     cursor = set_cursor(db_file)
-    # cursor = clean_up(cursor)
+    cursor = clean_up(cursor, start, end)
 
     file_dat = {}
 
     names = ""
-    for name in file_namez:
-        names = names + "  " + name
+    file_namez = []
+    for n in files:
+        if determineIfFileInBounds(cursor, n):
+            names = names + "  " + n
+            file_namez.append(n)
     file_dat["File Name(s)"] = names
 
     the_timeline, the_pulse = gather_many(cursor, file_namez)
@@ -766,7 +793,7 @@ def all_data(db_file, file_namez):
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
 
-def multiple_database_get_data (db_filename_list):
+def multiple_database_get_data (db_filename_list, start, end):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis
 
         Parameters
@@ -792,7 +819,7 @@ def multiple_database_get_data (db_filename_list):
 
     for db_file, true_filename in db_filename_list:
         cursor = set_cursor(db_file)
-        cursor = clean_up(cursor)
+        cursor = clean_up(cursor, start, end)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
         overall_time_line.extend(the_timeline)
         list_of_pulses.append(the_pulse)

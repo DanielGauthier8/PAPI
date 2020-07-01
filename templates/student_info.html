@@ -10,6 +10,10 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+
 	</head>
 	<body>
 
@@ -38,6 +42,7 @@
 
 
 					<form method="post" action="#">
+						<h3>Select Files to Anaylze</h3>
 						<input type="checkbox" id="select_all_files" name="chosen_files" value="All Files">
 						<label for="select_all_files">All Files</label>
 						<br/><br/>
@@ -47,6 +52,53 @@
 
 						{% endfor %}
 						<br/>
+
+						<!-- Selecting dates to anaylze -->	
+						<h3>Select Dates to Anaylze</h3>
+						<p>Choose the range you would like files analyzed in or leave blank to process the entire file history. </p>
+
+						<div class="row uniform 50%">
+							<div class="6u 12u$(xsmall)">
+								<div class="select-wrapper">
+									<select name="start" id="start">
+										<option value="na">- Start date -</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="6u 12u$(xsmall)">
+								<div class="select-wrapper">
+									<select name="end" id="end">
+										<option value="na">- End date -</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<br />
+							
+						<script>
+
+							var dates = [];
+							{% for each in file_bounds %}
+								dates.push("{{each|safe}}".substr(2, 19));
+							{% endfor %}
+
+							$(document).ready(function(){
+								dates = dates.map(day => moment(day))
+								console.log(dates)
+								while(dates[0].isBefore(dates[1])){
+									field = '<option value="' + dates[0].format("YYYY-MM-DD") + '">' + dates[0].format("MM-DD-YYYY") + '</option>'
+									$("#start").append(field);
+									$("#end").append(field);
+									dates[0].add(1, "day")
+								}
+
+								// @todo: client side date validation?
+							})
+
+						</script>
+
 						<input type="submit" value="Submit">
 					</form>
 				</div>

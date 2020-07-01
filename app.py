@@ -103,7 +103,9 @@ def upload_files():
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
-    cursor = db_actions.clean_up(cursor)
+    cursor = db_actions.clean_up(cursor, False, False)
+
+    file_bounds = db_actions.documentBounds(cursor)
 
     if token not in session:
         session[token] = None
@@ -113,15 +115,20 @@ def results(token):
         temp = request.form.getlist('chosen_files')
         if "All Files" not in str(temp):
             session[token] = temp
-        return redirect(url_for('file_analysis', token=token))
-    return render_template('student_info.html', files_list=session[token])
+        if request.form['start'] is not "na":
+            cursor = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
+
+            # db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
+
+        return redirect(url_for('file_analysis', token=token) + "?start=" + request.form['start'] + "&end=" + request.form['end'])
+    return render_template('student_info.html', files_list=session[token], file_bounds=file_bounds)
 
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
     db_actions.clear_old_files()
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
-        all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+        all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
     if request.method == 'POST':
@@ -131,7 +138,7 @@ def file_analysis(token):
             skip_empty = True
 
         file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
-            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token])
+            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token, request.args.get('start'), request.args.get('end')), session[token])
 
         user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
                                                                                  request.form['granularity'],
@@ -149,7 +156,7 @@ def file_analysis_many(token):
     db_actions.clear_old_files()
     zip_path = db_actions.download_generation(session[token], canvas, letter)
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
-        multiple_database_get_data(session[token])
+        multiple_database_get_data(session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
     if request.method == 'POST':

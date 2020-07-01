@@ -115,7 +115,7 @@ def results(token):
         if "All Files" not in str(temp):
             session[token] = temp
         if request.form['start'] is not "na":
-            cursor, conn = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
+            cursor = db_actions.clean_up(cursor, request.form['start'], request.form['end'])
 
             # db_actions.chopDocument(os.path.join(app.config['UPLOAD_FOLDER'], token), request.form['start'], request.form['end'], True)
 
@@ -125,6 +125,8 @@ def results(token):
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
+    if not session[token]:
+        return redirect(url_for('results', token=token))
     db_actions.clear_old_files()
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))

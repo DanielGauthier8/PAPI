@@ -867,7 +867,7 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
 
     for db_file, true_filename in db_filename_list:
         cursor, conn = set_cursor(db_file)
-        cursor = clean_up(cursor,  start, end)
+        cursor, conn = clean_up(cursor,  start, end)
         file_namez = all_files(cursor)
         cursor.close()
         conn.close()

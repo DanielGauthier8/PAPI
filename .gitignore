@@ -2,6 +2,10 @@
 /venv/
 .idea
 /databases/
+/report_generation/
+/static/zipped_exports/
 /__pycache__/
 
 !/databases/.gitkeep
+!/report_generation/.gitkeep
+!/static/zipped_exports/.gitkeep

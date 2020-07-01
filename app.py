@@ -1,7 +1,10 @@
-import time
 import datetime
 import os
 import secrets
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+
 
 from flask import Flask, render_template, flash, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
@@ -73,7 +76,7 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
             session['file_name'] = token
 
-            return redirect(url_for('loading', token=token))
+            return redirect(url_for('results', token=token))
     return render_template('upload_file.html')
 
 
@@ -86,11 +89,11 @@ def upload_files():
         files_list = []
         for file in uploaded_files:
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+                filename, file_extension = os.path.splitext(secure_filename(file.filename))
                 # print(filename)
                 token = secrets.token_urlsafe(16)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], token))
-                files_list.append(os.path.join(app.config['UPLOAD_FOLDER'], token))
+                files_list.append([(os.path.join(app.config['UPLOAD_FOLDER'], token)), filename])
         session[token] = files_list
         print(files_list)
         return redirect(url_for('file_analysis_many', token=token))
@@ -99,7 +102,6 @@ def upload_files():
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
-    time.sleep(1)
     cursor = db_actions.set_cursor(os.path.join(app.config['UPLOAD_FOLDER'], token))
     cursor = db_actions.clean_up(cursor, False, False)
 
@@ -124,6 +126,7 @@ def results(token):
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
+    db_actions.clear_old_files()
     file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
         all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
@@ -150,7 +153,8 @@ def file_analysis(token):
 
 @app.route('/file_analysis_many/<token>', methods=['GET', 'POST'])
 def file_analysis_many(token):
-    # TODO: Add deletion insertion timeline
+    db_actions.clear_old_files()
+    zip_path = db_actions.download_generation(session[token], canvas, letter)
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
         multiple_database_get_data(session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
@@ -170,8 +174,9 @@ def file_analysis_many(token):
 
         return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
                                deletion_insertion_timeline=deletion_insertion_timeline,
-                               heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection)
+                               heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection, zip_path=zip_path)
 
     return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
                            deletion_insertion_timeline=deletion_insertion_timeline,
-                           heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection)
+                           heatmaps=heatmaps, file_dat=file_dat, user_selection=user_selection, zip_path=zip_path)
+

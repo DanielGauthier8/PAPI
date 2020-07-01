@@ -10,7 +10,7 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../static/assets/css/main.css" />
-        <meta http-equiv="refresh" content="0; URL='{{ url_for('results',token=token) }}'" />
+        <meta http-equiv="refresh" content="0; URL='{{ url_for('export',token=token) }}'" />
 	</head>
 	<body>
 
@@ -21,8 +21,8 @@
 					<nav id="nav">
 						<a href="{{ url_for('index') }}">Home</a>
 						<a href="{{ url_for('start') }}">Start</a>
-						<a href="{{ url_for('upload_file') }}"><strong>Student Mode</strong></a>
-						<a href="{{ url_for('upload_files') }}">Class Mode</a>
+						<a href="{{ url_for('upload_file') }}">Student Mode</a>
+						<a href="{{ url_for('upload_files') }}"><strong>Class Mode</strong></a>
 						<a href="{{ url_for('learn_more') }}">Learn More</a>
 					</nav>
 				</div>

@@ -1,10 +1,20 @@
-import os
 import sqlite3
 import datetime
 import time
 import os
+import zipfile
+
+from reportlab.graphics import renderPDF
+from reportlab.graphics.charts.lineplots import LinePlot
+from reportlab.lib import colors
+from reportlab.lib.colors import purple, blue, red, gray, green, black
+from reportlab.graphics.charts.linecharts import HorizontalLineChart
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.widgets.markers import makeMarker
+from reportlab.lib.pagesizes import letter
 
 print("Running")
+
 
 def clear_old_files():
     databases = os.listdir("./databases")
@@ -15,10 +25,83 @@ def clear_old_files():
             if file is not ".gitkeep":
                 os.remove(os.path.join("./databases/", file))
 
-# Autodelete older files at server startup
+
 clear_old_files()
+# Auto-delete older files at server startup
 
 # ----------------------------------------Helper Functions
+
+
+def graph_out(the_timeline, graphs):
+    """Shows basic use of a line chart."""
+    data = []
+    the_max = 0
+    for graph in graphs:
+        if max(graph) > the_max:
+            the_max = max(graph)
+        new_list = [(i, graph[i]) for i in range(0, len(the_timeline))]  # str(the_timeline[i])
+        data.append(new_list)
+    drawing = Drawing(500, 300)
+    lp = LinePlot()
+    lp.height = 300
+    width, height = letter
+    lp.width = width - 80
+    lp.data = data
+    # lp.lineLabelFormat = '%2.0f'
+    lp.strokeColor = colors.black
+    # comments, logic, operations, output
+    lp.lines[0].strokeColor = colors.green
+    lp.lines[0].symbol = makeMarker('FilledCircle')
+    lp.lines[1].strokeColor = colors.blue
+    lp.lines[1].symbol = makeMarker('FilledCircle')
+    lp.lines[2].strokeColor = colors.purple
+    lp.lines[2].symbol = makeMarker('FilledCircle')
+    lp.lines[3].strokeColor = colors.red
+    lp.lines[3].symbol = makeMarker('FilledCircle')
+    # lp.xValueAxis.valueMin = 0
+    # lp.xValueAxis.valueMax = 5
+    # lp.xValueAxis.valueStep = 1
+    lp.yValueAxis.valueMin = 0
+    lp.yValueAxis.valueMax = the_max + 30
+    # lp.yValueAxis.valueStep = 1
+    drawing.add(lp)
+    return drawing
+
+
+def make_legend (the_canvas):
+    start_y = 300
+    the_canvas.setFillColor(gray)
+    the_canvas.rect(150, 230, 300, 80, fill=True, stroke=True)
+    the_canvas.setFillColor(green)
+    the_canvas.rect(180, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(160, start_y, "Comments")
+    the_canvas.setFillColor(blue)
+    the_canvas.rect(250, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(240, start_y, "Logic")
+    the_canvas.setFillColor(purple)
+    the_canvas.rect(320, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(295, start_y, "Operations")
+    the_canvas.setFillColor(red)
+    the_canvas.rect(390, 270, 20, 15, fill=True, stroke=True)
+    the_canvas.setFillColor(black)
+    the_canvas.drawString(380, start_y, "Output")
+
+
+def heading(true_filename, the_canvas, the_letter):
+    width, height = the_letter
+    the_canvas.setFont('Courier', 14)
+    the_canvas.drawString(30, 750, 'PAPI Student Feedback')
+    the_canvas.drawString(30, 735, 'University of Rhode Island')
+    the_canvas.drawString(370, 750, "Date Generated: " + str(datetime.date.today()))
+    the_canvas.setFont('Courier', 12)
+    the_canvas.drawString(30, 683, 'Name:')
+    the_canvas.line(0, 680, width, 680)
+    the_canvas.drawString(120, 683, true_filename)
+
+
 def __remove_char_from_string(the_string, the_characters):
     for the_char in the_characters:
         the_string = the_string.replace(the_char, "")
@@ -134,10 +217,18 @@ def time_graph_granularity(time_list, items_list, zoom_level, skip_no_activity=T
 
             index += 1
 
-
     return user_selection, new_time_list, new_item_list
 
 
+def zip_dir(path, filename):
+    # Adapted from https://stackoverflow.com/questions/1855095/how-to-create-a-zip-archive-of-a-directory-in-python
+    zip_file = zipfile.ZipFile(filename + '.zip', 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            zip_file.write(os.path.join(root, file), arcname=file)
+
+    zip_file.close()
 # ----------------------------------------Database Management
 
 
@@ -221,7 +312,7 @@ def get_like_db(cursor, db_name, column, like_string):
     cursor: object
         Cursor object matching column values
     """
-    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE "+ ' "%' + like_string + '%"')
+    cursor.execute("SELECT * FROM " + db_name + " WHERE " + column + " LIKE " + ' "%' + like_string + '%"')
     return cursor
 
 
@@ -394,7 +485,7 @@ def all_pulses(the_timeline, the_pulse):
     operation_list = []
     output_list = []
     for element in the_timeline:
-        comments_list.append(the_pulse[element][0].count("//") +
+        comments_list.append(the_pulse[element][0].count("// ") +
                              the_pulse[element][0].count("/*"))
 
         logic_list.append(the_pulse[element][0].count("if") +
@@ -461,7 +552,7 @@ def comment_count(documentz):
     for element in documentz:
 
         element = str(element)
-        comments.append(int(element.count(" // ")))
+        comments.append(int(element.count("// ")))
         comments.append(int(element.count("/*")))
         comments.append(int(element.count("# ")))
         comments.append(int(element.count("<!--")))
@@ -592,14 +683,14 @@ def deletions_insertions(the_timeline, the_pulse) -> (int, int):
         # print(operation_string[0])
         # print(operation_string)
         if len(the_pulse[operation_string][0]) > 1:
-            insertions += 1
-            insertions_list.append(1)
+            insertions += len(the_pulse[operation_string][0])
+            insertions_list.append(the_pulse[operation_string][0])
         else:
             insertions_list.append(0)
 
         if len(the_pulse[operation_string][1]) > 1:
-            deletions += 1
-            deletions_list.append(1)
+            deletions += len(the_pulse[operation_string][1])
+            deletions_list.append(len(the_pulse[operation_string][1]))
         else:
             deletions_list.append(0)
 
@@ -632,8 +723,8 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     local_file_data["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
-    local_file_data["Number of Deletion Chunks*"] = deletions
-    local_file_data["Number of Insertion Chunks*"] = insertions
+    local_file_data["Number of Deletion Characters"] = deletions
+    local_file_data["Number of Insertion Characters"] = insertions
 
     local_file_data["Number of Comments*"] = comment_count(documentz_info(the_cursor, file_namez, "file_contents"))
 
@@ -647,10 +738,10 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
     if not buildingMultiStudentArray:
         file_history = "["
     for i in pulse:
-        if(len(pulse[i][0]) > 1):
+        if len(pulse[i][0]) > 1:
             file_history += "{\"time\": \"" + i.isoformat() + "\", "
             file_history += "\"o\": \"" + pulse[i][0][:1] + "\"},"
-        if(len(pulse[i][1]) > 1):
+        if len(pulse[i][1]) > 1:
             file_history += "{\"time\": \"" + i.isoformat() + "\", "
             file_history += "\"o\": \"" + pulse[i][1][:1] + "\"},"
     if not buildingMultiStudentArray:
@@ -701,6 +792,7 @@ def all_data(db_file, files, start, end):
 
     return file_dat, graphs, the_timeline, deletion_insertion_timeline
 
+
 def multiple_database_get_data (db_filename_list, start, end):
     """Calls all required helper functions to get all metadata for class mode, multi-student analysis
 
@@ -725,7 +817,7 @@ def multiple_database_get_data (db_filename_list, start, end):
     overall_time_line = []
     heatmaps = "["
 
-    for db_file in db_filename_list:
+    for db_file, true_filename in db_filename_list:
         cursor = set_cursor(db_file)
         cursor = clean_up(cursor, start, end)
         the_timeline, the_pulse = gather_many(cursor, all_files(cursor))
@@ -752,3 +844,95 @@ def multiple_database_get_data (db_filename_list, start, end):
     graphs = all_pulses(the_timeline, many_student_pulse)
 
     return graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat
+
+
+def download_generation(db_filename_list, outter_canvas, letter):
+    print(db_filename_list[len(db_filename_list) - 1][0])
+    download_path = os.path.join("report_generation", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
+    try:
+        os.mkdir(download_path)
+    except FileExistsError:
+        print("File already exists")
+
+    for db_file, true_filename in db_filename_list:
+        cursor = set_cursor(db_file)
+        cursor = clean_up(cursor)
+        file_namez = all_files(cursor)
+        file_dat, graphs, the_timeline, deletion_insertion_timeline = all_data(db_file, file_namez)
+
+        the_canvas = outter_canvas.Canvas(os.path.join(download_path, true_filename) + ".pdf", pagesize=letter)
+        the_canvas.setLineWidth(.3)
+        heading(true_filename, the_canvas, letter)
+        start_y = 650
+        gap = 350
+        the_canvas.setFont('Courier-Bold', 12)
+        the_canvas.drawString(30, start_y, "File Name(s)")
+        the_canvas.setFont('Courier', 12)
+        for files in file_namez:
+            the_canvas.drawString(30 + gap, start_y, files)
+            start_y -= 20
+            if start_y < 40:
+                the_canvas.showPage()
+                heading(true_filename, the_canvas, letter)
+                start_y = 650
+
+        for key, value in file_dat.items():
+            if len(str(value)) < 20:
+                the_canvas.setFont('Courier-Bold', 12)
+                the_canvas.drawString(30, start_y, str(key))
+                the_canvas.setFont('Courier', 12)
+                the_canvas.drawString(30 + gap, start_y, str(value))
+                start_y -= 20
+                the_canvas.drawString
+            if key == "Large Text Insertion Detection*" and value == -1:
+                the_canvas.setFont('Courier-Bold', 12)
+                the_canvas.drawString(30, start_y, str(key))
+                the_canvas.setFont('Courier', 12)
+                the_canvas.drawString(30 + gap, start_y, "False")
+                start_y -= 20
+            if start_y < 40:
+                the_canvas.showPage()
+                heading(true_filename, the_canvas, letter)
+                start_y = 650
+        the_canvas.setFont('Courier-Bold', 12)
+        the_canvas.drawString(30, start_y, "Large Text Insertion Detection*")
+        start_y -= 20
+        if file_dat["Large Text Insertion Detection*"] != -1:
+            for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
+                the_canvas.setFont('Courier-Bold', 12)
+                the_canvas.drawString(30 + 10, start_y, one_instance_key)
+                start_y -= 20
+                split_values = one_instance_value.split("    ")
+                for j in split_values:
+                    chunk_size = 60
+                    for one_line in range(0,len(j),60):
+                        the_canvas.setFont('Courier', 12)
+                        the_canvas.drawString(30 + 20, start_y, j[one_line:one_line+60])
+                        start_y -= 20
+                        if start_y < 40:
+                            the_canvas.showPage()
+                            heading(true_filename, the_canvas, letter)
+                            start_y = 650
+                start_y -= 20
+                if start_y < 40:
+                    the_canvas.showPage()
+                    heading(true_filename, the_canvas, letter)
+                    start_y = 650
+
+        user_selection, the_timeline, graphs = time_graph_granularity(the_timeline, graphs,
+                                                                                 'day')
+        drawing = graph_out(the_timeline, graphs)
+        the_canvas.setFont('Courier-Bold', 14)
+        start_y -= 20
+        the_canvas.showPage()
+        width, height = letter
+        heading(true_filename, the_canvas, letter)
+        the_canvas.drawString((width / 2) - 50, 650, "ACTIVITY BY TYPE")
+        renderPDF.draw(drawing, the_canvas, 30, 320, showBoundary=False)
+        make_legend(the_canvas)
+
+        the_canvas.save()
+    zip_path = os.path.join("static", "zipped_exports", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
+    zip_dir(download_path, zip_path)
+
+    return os.path.join("..", (zip_path + ".zip"))

@@ -194,6 +194,14 @@ def documentBounds(cursor):
         cursor.execute("SELECT created_at FROM Documents ORDER BY created_at DESC LIMIT 1;").fetchone()
     ]
 
+def determineIfFileInBounds(cursor, filename):
+    """ Determines if a file is to be included in data based on date restrictions
+
+    """
+    if cursor.execute("SELECT path FROM Documents WHERE path = \"" + filename + "\" LIMIT 1;").fetchone() is not None:
+        return True
+    return False
+
 
 def get_like_db(cursor, db_name, column, like_string):
     """Gets any db row with specific column value
@@ -250,8 +258,8 @@ def document_info(cursor, file_name, lookup_item):
         fetch = __db_string_to_array(fetch)
     if index == 15:
         fetch = len(fetch)
-
     return fetch
+
 
 
 def documentz_info(cursor, file_namez, lookup_item):
@@ -355,6 +363,7 @@ def gather_many(cursor, files):
     for file_name in files:
         gathered = gather(cursor, file_name)
         many_file_pulses = {**many_file_pulses, **gathered}
+
 
     # many_file_pulses = sorted(many_file_pulses)
     the_timeline = list(many_file_pulses.keys())
@@ -649,7 +658,7 @@ def build_file_history(pulse, buildingMultiStudentArray = False):
     return file_history
 
 
-def all_data(db_file, file_namez, start, end):
+def all_data(db_file, files, start, end):
     """Calls all required helper functions to get all metadata
 
     Parameters
@@ -674,8 +683,11 @@ def all_data(db_file, file_namez, start, end):
     file_dat = {}
 
     names = ""
-    for name in file_namez:
-        names = names + "  " + name
+    file_namez = []
+    for n in files:
+        if determineIfFileInBounds(cursor, n):
+            names = names + "  " + n
+            file_namez.append(n)
     file_dat["File Name(s)"] = names
 
     the_timeline, the_pulse = gather_many(cursor, file_namez)

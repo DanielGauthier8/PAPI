@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<!--
+	Introspect by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>Date Selection</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../static/assets/css/main.css" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+
+	</head>
+	<body>
+
+		<!-- Header -->
+			<header id="header">
+				<div class="inner">
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
+					<nav id="nav">
+						<a href="{{ url_for('index') }}">Home</a>
+						<a href="{{ url_for('start') }}">Start</a>
+						<a href="{{ url_for('upload_file') }}">Student Mode</a>
+						<a href="{{ url_for('upload_files') }}"><strong>Class Mode</strong></a>
+						<a href="{{ url_for('learn_more') }}">Learn More</a>
+					</nav>
+				</div>
+			</header>
+			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
+
+		<!-- Main -->
+			<section id="main" >
+				<div class="inner">
+					<header class="major special">
+						<h1>Files</h1>
+					</header>
+					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+
+
+					<form method="post" action="../../file_analysis_many/{{token}}">
+
+						<!-- Selecting dates to anaylze -->	
+						<h3>Select Dates to Anaylze</h3>
+						<p>Choose the range you would like files analyzed in or leave blank to process the entire file history. </p>
+
+						<div class="row uniform 50%">
+							<div class="6u 12u$(xsmall)">
+								<div class="select-wrapper">
+									<select name="start" id="start">
+										<option value="na">- Start date -</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="6u 12u$(xsmall)">
+								<div class="select-wrapper">
+									<select name="end" id="end">
+										<option value="na">- End date -</option>
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<br />
+							
+						<script>
+
+							var importedDates = [];
+							{% for each in file_bounds %}
+							importedDates.push("{{each|safe}}".substr(2, 19));
+							{% endfor %}
+
+							$(document).ready(function(){
+								importedDates = importedDates.map(day => moment(day))
+
+								dates = importedDates.sort((a,b) =>  moment(a).format('YYYYMMDD') - moment(b).format('YYYYMMDD'))
+
+								dates = [dates[0], dates[dates.length - 1]]
+
+								while(dates[0].isBefore(dates[1])){
+									field = '<option value="' + dates[0].format("YYYY-MM-DD") + '">' + dates[0].format("MM-DD-YYYY") + '</option>'
+									$("#start").append(field);
+									$("#end").append(field);
+									dates[0].add(1, "day")
+								}
+
+								// @todo: client side date validation?
+							})
+
+						</script>
+
+						<input type="submit" value="Submit">
+					</form>
+				</div>
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<div class="inner">
+					<div class="copyright">
+						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
+					</div>
+				</div>
+			</section>
+
+		<!-- Scripts -->
+			<script src="../static/assets/js/jquery.min.js"></script>
+			<script src="../static/assets/js/skel.min.js"></script>
+			<script src="../static/assets/js/util.js"></script>
+			<script src="../static/assets/js/main.js"></script>
+
+	</body>
+</html>

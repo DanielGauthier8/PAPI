@@ -139,7 +139,7 @@ def file_analysis(token):
             skip_empty = True
 
         file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
-            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token, request.args.get('start'), request.args.get('end')), session[token])
+            all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))
 
         user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
                                                                                  request.form['granularity'],

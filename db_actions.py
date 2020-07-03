@@ -662,7 +662,6 @@ def time_spent(timeline_list):
     if number_of_days is 0:
         number_of_days = 1
 
-
     return {"Time Worked": str(total_time), "Number of Work Sessions": len(sessions_list),
             "Over Number of Days": number_of_days, "Average Work Session Length": average_session_length}
 
@@ -874,7 +873,7 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
 
     for db_file, true_filename in db_filename_list:
         cursor, conn = set_cursor(db_file)
-        cursor, conn = clean_up(cursor,  start, end)
+        cursor = clean_up(cursor,  start, end)
         file_namez = all_files(cursor)
         cursor.close()
         conn.close()
@@ -897,7 +896,7 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
                 start_y = 650
 
         for key, value in file_dat.items():
-            if len(str(value)) < 20:
+            if len(str(value)) < 20 and value != -1:
                 the_canvas.setFont('Courier-Bold', 12)
                 the_canvas.drawString(30, start_y, str(key))
                 the_canvas.setFont('Courier', 12)
@@ -948,7 +947,10 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
         width, height = letter
         heading(true_filename, the_canvas, letter)
         the_canvas.drawString((width / 2) - 50, 650, "ACTIVITY BY TYPE")
-        renderPDF.draw(drawing, the_canvas, 30, 320, showBoundary=False)
+        try:
+            renderPDF.draw(drawing, the_canvas, 30, 320, showBoundary=False)
+        except IndexError:
+            print("Index Error")
         make_legend(the_canvas)
 
         the_canvas.save()

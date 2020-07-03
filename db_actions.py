@@ -624,8 +624,8 @@ def time_spent(timeline_list):
     session = []
     number_of_days = 0
     # If only one edit in a day
-    if len(timeline_list) == 1:
-        return {"Time Worked on Assigment": 5, "Number of Work Sessions": 1, "Over Number of Days": 1}
+    if len(timeline_list) <= 3:
+        return {"Time Worked on Assigment": "00:05:00", "Number of Work Sessions": 1, "Over Number of Days": 1}
 
     try:
         previous = timeline_list[0]
@@ -633,28 +633,35 @@ def time_spent(timeline_list):
         return 0
 
     timeline_list.sort()
-
+    index = 0
     for user_action_time in timeline_list:
+        session.append(user_action_time)
         if user_action_time.date() > previous.date():
             number_of_days += 1
         if user_action_time > previous + datetime.timedelta(minutes=5):
             sessions_list.append(session)
             session = []
-        session.append(user_action_time)
-
         previous = user_action_time
+        if index is len(timeline_list) - 1:
+            sessions_list.append(session)
+        index += 1
+
     total_time = None
     current_time = 0
-    for the_session in sessions_list:
 
+    for the_session in sessions_list:
         current_time = the_session[len(the_session) - 1] - the_session[0]
         if total_time is None:
             total_time = current_time
-        total_time = total_time + current_time
+        else:
+            total_time = total_time + current_time
     try:
         average_session_length = str(total_time / len(sessions_list))
     except TypeError:
         average_session_length = total_time
+    if number_of_days is 0:
+        number_of_days = 1
+
 
     return {"Time Worked": str(total_time), "Number of Work Sessions": len(sessions_list),
             "Over Number of Days": number_of_days, "Average Work Session Length": average_session_length}

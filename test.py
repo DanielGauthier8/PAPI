@@ -84,58 +84,60 @@ def heading(canvas, letter):
 
 
 def main(canvas):
-    cursor = db_actions.set_cursor("./databases/oyXF9KjTth6bEhZ4UDackQ")
-    cursor = db_actions.clean_up(cursor)
+    cursor, conn= db_actions.set_cursor("./databases/yygU70yRaCWW1-51h3b7ag")
+    cursor = db_actions.clean_up(cursor, False, False)
     file_namez = db_actions.all_files(cursor)
-    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data("./databases/oyXF9KjTth6bEhZ4UDackQ", file_namez)
-    canvas = canvas.Canvas("form.pdf", pagesize=letter)
-    canvas.setLineWidth(.3)
-    heading(canvas, letter)
-    start_y = 650
-    gap = 350
-    canvas.drawString(30, start_y, "File Name(s)")
-    for files in file_namez:
-        canvas.drawString(30 + gap, start_y, files)
-        start_y -= 20
-        if start_y < 40:
-            canvas.showPage()
-            heading(canvas,letter)
-            start_y = 650
+    file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions.all_data("./databases/yygU70yRaCWW1-51h3b7ag", file_namez, False, False)
 
-    for key, value in file_dat.items():
-        if len(str(value)) < 20:
-            canvas.drawString(30, start_y, str(key))
-            canvas.drawString(30 + gap, start_y, str(value))
-            start_y -= 20
-            canvas.drawString
-        if key == "Large Text Insertion Detection*" and value == -1:
-            canvas.drawString(30, start_y, str(key))
-            canvas.drawString(30 + gap, start_y, "False")
-            start_y -= 20
-
-    canvas.drawString(30, start_y, "Large Text Insertion Detection*")
-    start_y -= 20
-    for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
-        canvas.drawString(30 + (gap/2), start_y, one_instance_key)
-        canvas.drawString(30 + gap, start_y, one_instance_value)
-        start_y -= 20
-        if start_y < 40:
-            canvas.showPage()
-            heading(canvas,letter)
-            start_y = 650
-    user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
-                                                                             'day')
-    drawing = sample(the_timeline, graphs)
-    canvas.setFont('Courier-Bold', 14)
-    start_y -= 20
-    canvas.showPage()
-    width, height = letter
-    heading(canvas, letter)
-    canvas.drawString((width/2)-50, 650, "ACTIVITY BY TYPE")
-    renderPDF.draw(drawing, canvas, 30, 320, showBoundary=False)
-
-
-    canvas.save()
+    print(file_dat["Number of Saves"])
+    # canvas = canvas.Canvas("form.pdf", pagesize=letter)
+    # canvas.setLineWidth(.3)
+    # heading(canvas, letter)
+    # start_y = 650
+    # gap = 350
+    # canvas.drawString(30, start_y, "File Name(s)")
+    # for files in file_namez:
+    #     canvas.drawString(30 + gap, start_y, files)
+    #     start_y -= 20
+    #     if start_y < 40:
+    #         canvas.showPage()
+    #         heading(canvas,letter)
+    #         start_y = 650
+    #
+    # for key, value in file_dat.items():
+    #     if len(str(value)) < 20:
+    #         canvas.drawString(30, start_y, str(key))
+    #         canvas.drawString(30 + gap, start_y, str(value))
+    #         start_y -= 20
+    #         canvas.drawString
+    #     if key == "Large Text Insertion Detection*" and value == -1:
+    #         canvas.drawString(30, start_y, str(key))
+    #         canvas.drawString(30 + gap, start_y, "False")
+    #         start_y -= 20
+    #
+    # canvas.drawString(30, start_y, "Large Text Insertion Detection*")
+    # start_y -= 20
+    # for one_instance_key, one_instance_value in file_dat["Large Text Insertion Detection*"].items():
+    #     canvas.drawString(30 + (gap/2), start_y, one_instance_key)
+    #     canvas.drawString(30 + gap, start_y, one_instance_value)
+    #     start_y -= 20
+    #     if start_y < 40:
+    #         canvas.showPage()
+    #         heading(canvas,letter)
+    #         start_y = 650
+    # user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
+    #                                                                          'day')
+    # drawing = sample(the_timeline, graphs)
+    # canvas.setFont('Courier-Bold', 14)
+    # start_y -= 20
+    # canvas.showPage()
+    # width, height = letter
+    # heading(canvas, letter)
+    # canvas.drawString((width/2)-50, 650, "ACTIVITY BY TYPE")
+    # renderPDF.draw(drawing, canvas, 30, 320, showBoundary=False)
+    #
+    #
+    # canvas.save()
 
     return 0
 

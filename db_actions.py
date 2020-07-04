@@ -127,11 +127,12 @@ def __db_string_to_array(the_string):
         A cleaned string
     """
     the_string = __remove_char_from_string(str(the_string), ['b', '[', ']', "'", '\"'])
-
     the_string = the_string.split(',')
+
+    # print (the_string)
     test_list = []
     # Empty list
-    if len(the_string) == 1 and (the_string[0] == '' or the_string[0] == '[]'):
+    if len(the_string) <= 1 or (the_string[0] == '' or the_string[0] == '[]'):
         the_string = []
 
     try:
@@ -325,41 +326,6 @@ def get_like_db(cursor, db_name, column, like_string):
 
 # ----------------------------------------Data Collection
 
-
-def document_info(cursor, file_name, lookup_item):
-    """Gets any specific file metadata from a final resulting file
-
-        Parameters
-        ----------
-        cursor : cursor
-            The current db cursor object
-        file_name : string
-            The filename of the file to lookup
-        lookup_item : string
-            The name of the metadata to be accessed, have to be in document_dict list
-        Returns
-        -------
-        fetch : str
-            String of metadata
-        """
-
-    # Save points added, to return the array of save points
-    document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
-                     "auth_attributes": 4, "save_points": 5, "revision_number": 6, "created_at": 7,
-                     "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
-
-    cursor = get_like_db(cursor, "Documents", "path", file_name)
-    student_file = cursor.fetchone()
-    index = document_dict[lookup_item]
-    fetch = student_file[index % 10]
-    if index % 10 == 5:
-        fetch = __db_string_to_array(fetch)
-    if index == 15:
-        fetch = len(fetch)
-    return fetch
-
-
-
 def documentz_info(cursor, file_namez, lookup_item):
     """Gets any specific file metadata from a list of final resulting filez
 
@@ -378,7 +344,7 @@ def documentz_info(cursor, file_namez, lookup_item):
     """
     document_dict = {"id": 0, "file_path": 1, "file_contents": 2, "file_hash": 3,
                      "auth_attributes": 4, "save_points": 5, "revision_number": 6, "created_at": 7,
-                     "updated_at": 8, "last_update": 9, "new_line_char": 10, "saves": 15}
+                     "updated_at": 8, "last_update": 9, "saves": 15}
     fetch = []
     i = 0
     for file_name in file_namez:
@@ -386,13 +352,18 @@ def documentz_info(cursor, file_namez, lookup_item):
         cursor = get_like_db(cursor, "Documents", "path", file_name)
         student_file = cursor.fetchone()
         index = document_dict[lookup_item]
-        fetch.append(student_file[index % 10])
+        if index % 10 != 5:
+            fetch.append(student_file[index % 10])
         if index % 10 == 5:
-            fetch.append(__db_string_to_array(fetch[i]))
-        if index == 15:
-            fetch.append(len(__db_string_to_array(fetch[i])))
+            fetch.append(__db_string_to_array(student_file[index % 10]))
+            print(student_file[index % 10])
         i += 1
 
+    if index == 15:
+        total_num = 1
+        for i in fetch:
+            total_num += len(i)
+        return total_num
     return fetch
 
 
@@ -410,7 +381,7 @@ def gather(cursor, file_name):
     general_pulse :dict
         Dictionary of user insertions and deletions (filename::return time, inserted_text)
     """
-    document_id = document_info(cursor, file_name, "id")
+    document_id = documentz_info(cursor, [file_name], "id")[0]
     general_pulse = {}
 
     cursor.execute("SELECT operation, created_at FROM Revisions WHERE document_id = " + str(document_id))
@@ -630,31 +601,34 @@ def time_spent(timeline_list):
     try:
         previous = timeline_list[0]
     except IndexError:
-        return 0
+        return -1
 
     timeline_list.sort()
     index = 0
     for user_action_time in timeline_list:
-        session.append(user_action_time)
         if user_action_time.date() > previous.date():
             number_of_days += 1
         if user_action_time > previous + datetime.timedelta(minutes=5):
-            sessions_list.append(session)
+            if len(session) > 1:
+                sessions_list.append(session)
             session = []
+        session.append(user_action_time)
         previous = user_action_time
-        if index is len(timeline_list) - 1:
+        if index is len(timeline_list) - 1 and len(session) > 0:
             sessions_list.append(session)
         index += 1
 
     total_time = None
     current_time = 0
-
     for the_session in sessions_list:
-        current_time = the_session[len(the_session) - 1] - the_session[0]
-        if total_time is None:
-            total_time = current_time
-        else:
-            total_time = total_time + current_time
+        if len(the_session) > 0:
+            # print(str(the_session[len(the_session) - 1]))
+            # print(str(the_session[0]))
+            current_time = the_session[len(the_session) - 1] - the_session[0]
+            if total_time is None:
+                total_time = current_time
+            else:
+                total_time = total_time + current_time
     try:
         average_session_length = str(total_time / len(sessions_list))
     except TypeError:
@@ -731,7 +705,7 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     creation_datez = documentz_info(the_cursor, file_namez, "created_at")
     local_file_data["First File Creation Date"] = creation_datez[0]
     local_file_data["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
-    # TODO: file_dat["Number of Saves"] = sum(documentz_info(cursor, file_namez, "saves"))
+    local_file_data["Number of Saves"] = (documentz_info(the_cursor, file_namez, "saves"))
     edit_datez = documentz_info(the_cursor, file_namez, "updated_at")
     local_file_data["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
 
@@ -884,16 +858,16 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
         heading(true_filename, the_canvas, letter)
         start_y = 650
         gap = 350
-        the_canvas.setFont('Courier-Bold', 12)
-        the_canvas.drawString(30, start_y, "File Name(s)")
-        the_canvas.setFont('Courier', 12)
-        for files in file_namez:
-            the_canvas.drawString(30 + gap, start_y, files)
-            start_y -= 20
-            if start_y < 40:
-                the_canvas.showPage()
-                heading(true_filename, the_canvas, letter)
-                start_y = 650
+        # the_canvas.setFont('Courier-Bold', 12)
+        # the_canvas.drawString(30, start_y, "File Name(s)")
+        # the_canvas.setFont('Courier', 12)
+        # for files in file_namez:
+        #     the_canvas.drawString(30 + gap, start_y, files)
+        #     start_y -= 20
+        #     if start_y < 40:
+        #         the_canvas.showPage()
+        #         heading(true_filename, the_canvas, letter)
+        #         start_y = 650
 
         for key, value in file_dat.items():
             if len(str(value)) < 20 and value != -1:

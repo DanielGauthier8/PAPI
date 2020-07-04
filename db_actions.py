@@ -356,7 +356,6 @@ def documentz_info(cursor, file_namez, lookup_item):
             fetch.append(student_file[index % 10])
         if index % 10 == 5:
             fetch.append(__db_string_to_array(student_file[index % 10]))
-            print(student_file[index % 10])
         i += 1
 
     if index == 15:
@@ -838,7 +837,6 @@ def multiple_database_get_data (db_filename_list, start, end):
 
 
 def download_generation(db_filename_list, outter_canvas, letter, start, end):
-    print(db_filename_list[len(db_filename_list) - 1][0])
     download_path = os.path.join("report_generation", os.path.basename(db_filename_list[len(db_filename_list) - 1][0]))
     try:
         os.mkdir(download_path)

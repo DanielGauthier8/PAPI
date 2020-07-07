@@ -95,9 +95,8 @@ def upload_files():
                 files_list.append([(os.path.join(app.config['UPLOAD_FOLDER'], token)), filename])
         session[token] = files_list
         print(files_list)
-        return redirect(url_for('file_analysis_many', token=token))
+        return redirect(url_for('filter', token=token))
     return render_template('upload_file_many.html')
-
 
 @app.route('/student_files/<token>', methods=['GET', 'POST'])
 def results(token):
@@ -122,6 +121,25 @@ def results(token):
         return redirect(url_for('file_analysis', token=token) + "?start=" + request.form['start'] + "&end=" + request.form['end'])
     return render_template('student_info.html', files_list=session[token], file_bounds=file_bounds)
 
+
+@app.route('/filter/<token>', methods=['GET', 'POST'])
+def filter(token):
+    
+    if request.method == 'POST':
+        return redirect(url_for('file_analysis_many', token=token) + "?start=" + request.form['start'] + "&end=" + request.form['end'])
+    else:
+        bounds = []
+        for file in session[token]:
+            print(file)
+            cursor, conn = db_actions.set_cursor(file[0])
+            cursor = db_actions.clean_up(cursor, False, False)
+
+            print(db_actions.documentBounds(cursor))
+            [start, end] = db_actions.documentBounds(cursor)
+            bounds.append(start)
+            bounds.append(end)
+
+        return render_template('date-select.html', file_bounds=bounds, token=token)
 
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):

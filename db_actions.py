@@ -346,12 +346,12 @@ def documentz_info(cursor, file_namez, lookup_item):
                      "auth_attributes": 4, "save_points": 5, "revision_number": 6, "created_at": 7,
                      "updated_at": 8, "last_update": 9, "saves": 15}
     fetch = []
+    index = document_dict[lookup_item]
     i = 0
     for file_name in file_namez:
         # Gets specific document columns
         cursor = get_like_db(cursor, "Documents", "path", file_name)
         student_file = cursor.fetchone()
-        index = document_dict[lookup_item]
         if index % 10 != 5:
             fetch.append(student_file[index % 10])
         if index % 10 == 5:
@@ -702,11 +702,16 @@ def get_meta_data(the_cursor, the_timeline, the_pulse, file_namez):
     """
     local_file_data = {}
     creation_datez = documentz_info(the_cursor, file_namez, "created_at")
-    local_file_data["First File Creation Date"] = creation_datez[0]
-    local_file_data["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
-    local_file_data["Number of Saves"] = (documentz_info(the_cursor, file_namez, "saves"))
     edit_datez = documentz_info(the_cursor, file_namez, "updated_at")
-    local_file_data["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
+    try:
+        local_file_data["First File Creation Date"] = creation_datez[0]
+        local_file_data["Last File Creation Date"] = creation_datez[len(creation_datez) - 1]
+        local_file_data["Last Edit Date"] = edit_datez[len(edit_datez) - 1]
+    except IndexError:
+        local_file_data["First File Creation Date"] = "N/A"
+        local_file_data["Last File Creation Date"] = "N/A"
+        local_file_data["Last Edit Date"] = "N/A"
+    local_file_data["Number of Saves"] = (documentz_info(the_cursor, file_namez, "saves"))
 
     deletions, insertions, deletions_list, insertions_list = deletions_insertions(the_timeline, the_pulse)
     local_file_data["Number of Deletion Characters"] = deletions

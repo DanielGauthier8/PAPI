@@ -1,6 +1,7 @@
 import datetime
 import os
 import secrets
+import time
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -141,8 +142,10 @@ def filter(token):
 
         return render_template('date-select.html', file_bounds=bounds, token=token)
 
+
 @app.route('/file_analysis/<token>', methods=['GET', 'POST'])
 def file_analysis(token):
+    # milliseconds = int(round(time.time() * 1000))
     if not session[token]:
         return redirect(url_for('results', token=token))
     db_actions.clear_old_files()
@@ -165,13 +168,14 @@ def file_analysis(token):
 
         return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
                                deletion_insertion_timeline=deletion_insertion_timeline, user_selection=user_selection)
-
+    # print(int(round(time.time() * 1000)) - milliseconds)
     return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
                            deletion_insertion_timeline=deletion_insertion_timeline, user_selection=user_selection)
 
 
 @app.route('/file_analysis_many/<token>', methods=['GET', 'POST'])
 def file_analysis_many(token):
+
     db_actions.clear_old_files()
     zip_path = db_actions.download_generation(session[token], canvas, letter, request.args.get('start'), request.args.get('end'))
     graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \

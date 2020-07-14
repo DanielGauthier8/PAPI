@@ -596,33 +596,32 @@ def time_spent(timeline_list):
     # If only one edit in a day
     if len(timeline_list) <= 3:
         return {"Time Worked on Assigment": "00:05:00", "Number of Work Sessions": 1, "Over Number of Days": 1}
+    session = []
+    timeline_list.sort()
 
     try:
-        previous = timeline_list[0]
+        session.append(timeline_list[0])
     except IndexError:
         return -1
 
-    timeline_list.sort()
     index = 0
+
     for user_action_time in timeline_list:
-        if user_action_time.date() > previous.date():
+        if user_action_time.date() > session[len(session) - 1].date():
             number_of_days += 1
-        if user_action_time > previous + datetime.timedelta(minutes=5):
-            if len(session) > 1:
-                sessions_list.append(session)
+
+        if user_action_time > session[len(session) - 1] + datetime.timedelta(minutes=10):
+            sessions_list.append(session)
             session = []
         session.append(user_action_time)
-        previous = user_action_time
-        if index is len(timeline_list) - 1 and len(session) > 0:
+
+        if index == len(timeline_list) - 1:
             sessions_list.append(session)
         index += 1
 
     total_time = None
-    current_time = 0
     for the_session in sessions_list:
         if len(the_session) > 0:
-            # print(str(the_session[len(the_session) - 1]))
-            # print(str(the_session[0]))
             current_time = the_session[len(the_session) - 1] - the_session[0]
             if total_time is None:
                 total_time = current_time

@@ -860,16 +860,16 @@ def download_generation(db_filename_list, outter_canvas, letter, start, end):
         heading(true_filename, the_canvas, letter)
         start_y = 650
         gap = 350
-        # the_canvas.setFont('Courier-Bold', 12)
-        # the_canvas.drawString(30, start_y, "File Name(s)")
-        # the_canvas.setFont('Courier', 12)
-        # for files in file_namez:
-        #     the_canvas.drawString(30 + gap, start_y, files)
-        #     start_y -= 20
-        #     if start_y < 40:
-        #         the_canvas.showPage()
-        #         heading(true_filename, the_canvas, letter)
-        #         start_y = 650
+        the_canvas.setFont('Courier-Bold', 12)
+        the_canvas.drawString(30, start_y, "File Name(s)")
+        the_canvas.setFont('Courier', 12)
+        for files in file_namez:
+            the_canvas.drawString(30 + gap, start_y, files)
+            start_y -= 20
+            if start_y < 40:
+                the_canvas.showPage()
+                heading(true_filename, the_canvas, letter)
+                start_y = 650
 
         for key, value in file_dat.items():
             if len(str(value)) < 20 and value != -1:

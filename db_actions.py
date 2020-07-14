@@ -595,7 +595,7 @@ def time_spent(timeline_list):
     number_of_days = 0
     # If only one edit in a day
     if len(timeline_list) <= 3:
-        return {"Time Worked on Assigment": "00:05:00", "Number of Work Sessions": 1, "Over Number of Days": 1}
+        return {"Time Worked on Assigment": "00:01:00", "Number of Work Sessions": 1, "Over Number of Days": 1}
     session = []
     timeline_list.sort()
 

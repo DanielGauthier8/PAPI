@@ -9,44 +9,74 @@
 		<title>Student Analysis</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="../static/assets/css/main.css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script> -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
 		<script src="../static/assets/js/heatmap.js"></script>
 	</head>
-	<body>
-
-		<!-- Header -->
-			<header id="header">
-				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">papi</a>
-					<nav id="nav">
-						<a href="{{ url_for('index') }}">Home</a>
-						<a href="{{ url_for('start') }}">Start</a>
-						<a href="{{ url_for('upload_file') }}"><strong>Student Mode</strong></a>
-						<a href="{{ url_for('upload_files') }}">Class Mode</a>
-						<a href="{{ url_for('learn_more') }}">Learn More</a>
-					</nav>
-				</div>
-			</header>
-
-			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
-<!-- Main -->
-			<section id="main">
-				<div class="inner">
-
-				<!-- One -->
-					<section id="one" class="major special">
-						<div class="content" style="text-align: center">
-							<h1>Student File Analysis</h1>
+	<body data-spy="scroll" data-target="#list-example">
 
 
 
+		<div class="container">
+
+			<nav class="navbar navbar-light bg-light">
+				<a class="navbar-brand" href="/../../">
+				  PAPI
+				</a>
+			  </nav>
+
+			  <br />
+
+
+			<div class="row">
+				<div class="col-md-3">
+
+					<style>
+						.list-group-item {
+							padding-right: 20px;
+						}
+						.nav-container {
+							position: fixed; 
+						}
+
+					</style>
+
+					<div class="nav-container">
+						<!-- PAPI Name or logo -->
+						<h2>PAPI</h2>
+						<!-- Sample Tagline  -->
+						<p>Learn about learning. </p>
+						<div id="list-example" class="list-group" style="min-width: 250px;">
+							<a class="list-group-item list-group-item-action" href="#list-item-1">Overview</a>
+							<a class="list-group-item list-group-item-action" href="#list-item-2">MOSS</a>
+							<a class="list-group-item list-group-item-action" href="#list-item-3">Heapmap</a>
+							<a class="list-group-item list-group-item-action" href="#list-item-4">File Activity</a>
 						</div>
-					</section>
-					<section id="two" class="major special">
-						<div class="content" style="text-align: center">
+
+
+						<br />
+						<br />
+
+						<div id="" class="" style="min-width: 250px;">
+							<!-- TODO: Fill in hyperlink -->
+							<a class="list-group-item list-group-item-action" href="#">Download PDF Report</a>
+						</div>
+
+					</div>
+
+
+
+				</div>
+				<div class="col-md-9">
+
+					<section id="list-item-1" class="major special">
+						<div class="content">
                      		<h2>File Data</h2>
 							<table>
                                     {% for key, value in file_dat.items() %}
@@ -65,8 +95,8 @@
 						</div>
 					</section>
 					{% if file_dat["Large Text Insertion Detection*"] != -1 %}
-					<section id="three" class="major special">
-						<div class="content" style="text-align: center">
+					<section id="list-item-2" class="major special">
+						<div class="content">
 							<h2>Large Text Insertion(s)</h2>
 							<table>
 								{% for key, value in file_dat["Large Text Insertion Detection*"].items() %}
@@ -85,9 +115,9 @@
 
 				
 					{% if deletion_insertion_timeline != -1 %}
-					<section id="four" class="major speical">
+					<section id="list-item-3" class="major speical">
 
-						<div class="content" style="text-align: center">
+						<div class="content">
 							<h2>File Trends</h2>
 							<h3>Heatmap</h3>
 							<table id="heatmap">
@@ -110,8 +140,8 @@
 					</section>
 					{% endif %}
 
-					<section id="five" class="major special">
-						<div class="content" style="text-align: center">
+					<section id="list-item-4" class="major special">
+						<div class="content">
 							<h3>Activity by Type</h3>
 							<form method="post" action="#">
 								<table>
@@ -145,18 +175,6 @@
 						</div>
 					</section>
 
-				</div>
-			</section>
-
-		<!-- Footer -->
-			<section id="footer">
-				<div class="inner">
-					<header>
-					</header>
-
-					<div class="copyright">
-						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
-					</div>
 				</div>
 			</section>
 
@@ -229,6 +247,8 @@
 			});
 
 		</script>
-
+		
+</div></div>
+		</div>
 	</body>
 </html>

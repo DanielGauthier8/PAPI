@@ -15,24 +15,36 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script> -->
+		<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+		<style>
+		.logo {
+			font-family: 'Pacifico', cursive;
+			font-size: 50pt !important;
+			color: #6582b1 !important;
+			padding-bottom: 25px !important;
+			text-align: center;
+		}
+		</style>
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
 		<script src="../static/assets/js/heatmap.js"></script>
+
+
 	</head>
 	<body data-spy="scroll" data-target="#list-example">
 
+		<nav class="navbar navbar-light bg-light">
+			<div class="container">
+				<a class="navbar-brand" href="/../../">
+					PAPI
+				</a>
+			</div>
+		</nav>
+
+		<br />
 
 
 		<div class="container">
-
-			<nav class="navbar navbar-light bg-light">
-				<a class="navbar-brand" href="/../../">
-				  PAPI
-				</a>
-			  </nav>
-
-			  <br />
-
 
 			<div class="row">
 				<div class="col-md-3">
@@ -49,9 +61,9 @@
 
 					<div class="nav-container">
 						<!-- PAPI Name or logo -->
-						<h2>PAPI</h2>
+						<h2 class="logo">papi</h2>
 						<!-- Sample Tagline  -->
-						<p>Learn about learning. </p>
+						<p class="text-center">Learn about learning. </p>
 						<div id="list-example" class="list-group" style="min-width: 250px;">
 							<a class="list-group-item list-group-item-action" href="#list-item-1">Overview</a>
 							<a class="list-group-item list-group-item-action" href="#list-item-2">MOSS</a>

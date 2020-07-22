@@ -30,6 +30,7 @@
   <body>
 
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
 		<a class="navbar-brand" href="#">PAPI</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 		  <span class="navbar-toggler-icon"></span>
@@ -37,16 +38,20 @@
 		<div class="collapse navbar-collapse" id="navbarNav">
 		  <ul class="navbar-nav">
 			<li class="nav-item active">
-			  <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+			  <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
 			</li>
 			<li class="nav-item">
-			  <a class="nav-link" href="#">Learn More</a>
+			  <a class="nav-link" href="upload_file">Student Mode</a>
 			</li>
 			<li class="nav-item">
+				<a class="nav-link" href="upload_file_many">Class Mode</a>
+			  </li>
+			<li class="nav-item pull-right">
 			  <a class="nav-link disabled" href="#">&copy; 2020</a>
 			</li>
 		  </ul>
 		</div>
+	</div>
 	  </nav>
 
 	<div style="min-height: 500px; background-image: url('static/images/bootstrap/classroom01.jpg'); background-size: cover;">
@@ -56,7 +61,7 @@
           <p class="lead ">Get a greater understanding of how your students program</p>
           <p>
             <a href="upload_file" class="btn btn-primary my-2">I'm a student</a>
-            <a href="upload_file_many" class="btn btn-secondary my-2">I'm a instructor</a>
+            <a href="upload_file_many" class="btn btn-secondary my-2">I'm an instructor</a>
           </p>
         </div>
 	  </section>
@@ -64,7 +69,7 @@
 
 	<section class="jumbotron" style="margin-top: 0px;">
 		<div class="container">
-			<h1 class="jumbotron-heading">Introduction</h1>
+			<h1 class="jumbotron-heading">Why use PAPI?</h1>
 			<p class="lead">An instructor needs ways to evaluate students when teaching new programming skills. A student’s progress throughout a class must be recorded so the teacher knows where the student needs to improve and how to improve instruction material. Currently, assignments are static when handed in; they do not indicate how a student got to their end resulting product. If students' progress on an assignment can be recorded and analyzed, formative feedback can be provided to students and instructors. This would not make sense to implement manually as it would take too much time of the teaching staff. To combat this issue, this software can help the teaching staff provide a better experience for the students.</p>
 		</div>
 	</section>
@@ -96,6 +101,25 @@
 			</div>
 		</div>
 	</div>
+
+	<footer class="container py-5">
+		<div class="row">
+		  <div class="col-12 col-md">
+			  
+			<h5>Automated Detailed <br />Programming Assignment Feedback</h5>
+			<p class="text-muted">Computer Science Department<br />The University of Rhode Island</p>
+			<small class="d-block mb-3 text-muted">&copy; 2020 PAPI by Daniel Gauthier</small>
+		  </div>
+		  <div class="col-12 col-md text-right">
+			<h5>About PAPI</h5>
+			<ul class="list-unstyled text-small">
+			  <li><a class="text-muted" href="mailto:Daniel_Gauthier@uri.edu">Contact Us</a></li>
+			  <li><a class="text-muted" href="/learn_more">Learn More</a></li>
+			  <li><a class="text-muted" href="https://github.com/DanielGauthier8/PAPI">Contribute</a></li>
+			</ul>
+		  </div>
+		</div>
+	  </footer>
 
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

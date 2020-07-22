@@ -1,117 +1,158 @@
-<!DOCTYPE HTML>
-<!--
-	Introspect by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
-<html>
-	<head>
-		<title>Date Selection</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="../static/assets/css/main.css" />
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	  rel="stylesheet">
+	<style>
+		.material-icons {
+			font-family: 'Material Icons';
+			font-weight: normal;
+			font-style: normal;
+			font-size: 54px;
+			display: inline-block;
+			line-height: 1;
+			text-transform: none;
+			letter-spacing: normal;
+			word-wrap: normal;
+			white-space: nowrap;
+			direction: ltr;
+			-webkit-font-smoothing: antialiased;
+			text-rendering: optimizeLegibility;
+			margin-bottom: 25px;
+		}
+	</style>
+	  
+	<title>PAPI</title>
+  </head>
+  <body>
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<a class="navbar-brand" href="#">PAPI</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNav">
+		  <ul class="navbar-nav">
+			<li class="nav-item active">
+			  <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+			</li>
+			<li class="nav-item">
+			  <a class="nav-link" href="#">Learn More</a>
+			</li>
+			<li class="nav-item">
+			  <a class="nav-link disabled" href="#">&copy; 2020</a>
+			</li>
+		  </ul>
+		</div>
+	  </nav>
 
-	</head>
-	<body>
+	  <div style="background-image: url('../../../static/images/bootstrap/classroom01.jpg'); background-size: cover;">
+		<section class="jumbotron"  style="margin-bottom: 0px; min-height: 200px; color: black !important; background-color: rgba(255, 255, 255, 0.6);">
+			<div class="container" style="margin-top: auto; margin-bottom: auto;">
+			  <h1 class="jumbotron-heading">Class mode</h1>
+			  <p class="lead ">Get a greater understanding of how your students program</p>
+			  <!-- <p>
+				<a href="upload_file" class="btn btn-primary my-2">I'm a student</a>
+				<a href="upload_file_many" class="btn btn-secondary my-2">I'm a instructor</a>
+			  </p> -->
+			</div>
+		  </section>
+		</div>
 
-		<!-- Header -->
-			<header id="header">
-				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">papi</a>
-					<nav id="nav">
-						<a href="{{ url_for('index') }}">Home</a>
-						<a href="{{ url_for('start') }}">Start</a>
-						<a href="{{ url_for('upload_file') }}">Student Mode</a>
-						<a href="{{ url_for('upload_files') }}"><strong>Class Mode</strong></a>
-						<a href="{{ url_for('learn_more') }}">Learn More</a>
-					</nav>
-				</div>
-			</header>
-			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
-
-		<!-- Main -->
-			<section id="main" >
-				<div class="inner">
-					<header class="major special">
-						<h1>Files</h1>
-					</header>
-					<a href="#" class="image fit"><img src="../static/images/pic11.jpg" alt="" /></a>
+	  <div class="container">
 
 
-					<form method="post" action="#">
 
-						<!-- Selecting dates to anaylze -->	
-						<h3>Select Dates to Anaylze</h3>
-						<p>Choose the range you would like files analyzed in or leave blank to process the entire file history. </p>
+		<br />
 
-						<div class="row uniform 50%">
-							<div class="6u 12u$(xsmall)">
-								<div class="select-wrapper">
-									<select name="start" id="start">
-										<option value="na">- Start date -</option>
-									</select>
-								</div>
-							</div>
 
-							<div class="6u 12u$(xsmall)">
-								<div class="select-wrapper">
-									<select name="end" id="end">
-										<option value="na">- End date -</option>
-									</select>
-								</div>
-							</div>
-						</div>
+			<h2>Date selection range</h2>
 
-						<br />
-							
-						<script>
+			<p>Choose the range you would like files analyzed in or leave blank to process the entire file history.</p>
 
-							var importedDates = [];
-							{% for each in file_bounds %}
-							importedDates.push("{{each|safe}}".substr(2, 19));
-							{% endfor %}
+			<br />
 
-							$(document).ready(function(){
-								importedDates = importedDates.map(day => moment(day))
 
-								dates = importedDates.sort((a,b) =>  moment(a).format('YYYYMMDD') - moment(b).format('YYYYMMDD'))
+			
+			<form method=post enctype=multipart/form-data>
 
-								dates = [dates[0], dates[dates.length - 1]]
+			<div class="row">
 
-								while(dates[0].isBefore(dates[1])){
-									field = '<option value="' + dates[0].format("YYYY-MM-DD") + '">' + dates[0].format("MM-DD-YYYY") + '</option>'
-									$("#start").append(field);
-									$("#end").append(field);
-									dates[0].add(1, "day")
-								}
 
-								// @todo: client side date validation?
-							})
 
-						</script>
-
-						<input type="submit" value="Submit">
-					</form>
-				</div>
-			</section>
-
-		<!-- Footer -->
-			<section id="footer">
-				<div class="inner">
-					<div class="copyright">
-						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
+				<div class="col-md-5">
+					<div class="form-group">
+					<select name="start" id="start"  class="form-control">
+						<option value="na">- Start date -</option>
+					</select>
 					</div>
+					
 				</div>
-			</section>
 
-		<!-- Scripts -->
-			<script src="../static/assets/js/jquery.min.js"></script>
-			<script src="../static/assets/js/skel.min.js"></script>
-			<script src="../static/assets/js/util.js"></script>
-			<script src="../static/assets/js/main.js"></script>
+				<div class="col-md-5">
+					<div class="form-group">
+					<select name="end" id="end"  class="form-control">
+						<option value="na">- End date -</option>
+					</select>
+					</div>
+					
+				</div>
 
-	</body>
+
+			</div>
+
+
+			<br />
+
+			<input type="submit" class="btn btn-md btn-primary" value="Continue">
+
+		</form>
+
+	  </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
+  
+	<script>
+				
+		var importedDates = [];
+		{% for each in file_bounds %}
+		importedDates.push("{{each|safe}}".substr(2, 19));
+		{% endfor %}
+
+		$(document).ready(function(){
+			importedDates = importedDates.map(day => moment(day))
+
+			dates = importedDates.sort((a,b) =>  moment(a).format('YYYYMMDD') - moment(b).format('YYYYMMDD'))
+
+			dates = [dates[0], dates[dates.length - 1]]
+
+			while(dates[0].isBefore(dates[1])){
+				field = '<option value="' + dates[0].format("YYYY-MM-DD") + '">' + dates[0].format("MM-DD-YYYY") + '</option>'
+				$("#start").append(field);
+				$("#end").append(field);
+				dates[0].add(1, "day")
+			}
+
+			// @todo: client side date validation?
+		})
+
+	</script>
+
+</body>
 </html>
+
+
+
+
+
+
+
+

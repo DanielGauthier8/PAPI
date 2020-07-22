@@ -1,141 +1,135 @@
-<!DOCTYPE HTML>
-<!--
-	Introspect by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
-<html>
-	<head>
-		<title>PAPI Home</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="../static/assets/css/main.css" />
-	</head>
-	<body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+	<style>
+		.material-icons {
+			font-family: 'Material Icons';
+			font-weight: normal;
+			font-style: normal;
+			font-size: 54px;
+			display: inline-block;
+			line-height: 1;
+			text-transform: none;
+			letter-spacing: normal;
+			word-wrap: normal;
+			white-space: nowrap;
+			direction: ltr;
+			-webkit-font-smoothing: antialiased;
+			text-rendering: optimizeLegibility;
+			margin-bottom: 25px;
+		}
+		.logo {
+			font-family: 'Pacifico', cursive;
+			font-size: 25pt !important;
+			color: #6582b1 !important;
+			margin-right: 20pt !important;
+		}
+	</style>
+	  
+	<title>PAPI</title>
+  </head>
+  <body>
 
-		<!-- Header -->
-			<header id="header">
-				<div class="inner">
-					<a href="{{ url_for('index') }}" class="logo">papi</a>
-					<nav id="nav">
-						<a href="{{ url_for('index') }}"><strong>Home</strong></a>
-						<a href="{{ url_for('start') }}">Start</a>
-						<a href="{{ url_for('upload_file') }}">Student Mode</a>
-						<a href="{{ url_for('upload_files') }}">Class Mode</a>
-						<a href="{{ url_for('learn_more') }}">Learn More</a>
-					</nav>
-				</div>
-			</header>
-			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container">
+		<a class="navbar-brand logo" href="#">papi</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNav">
+		  <ul class="navbar-nav">
+			<li class="nav-item active">
+			  <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+			</li>
+			<li class="nav-item">
+			  <a class="nav-link" href="upload_file">Student Mode</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="upload_file_many">Class Mode</a>
+			  </li>
+			<li class="nav-item float-right">
+			  <a class="nav-link disabled" href="#">&copy; 2020</a>
+			</li>
+		  </ul>
+		</div>
+	</div>
+	  </nav>
 
-		<!-- Banner -->
-			<section id="banner">
-				<div class="inner">
-					<h1>Assignment Analysis: <span>Get a greater understanding of how your students program</span></h1>
-					<ul class="actions">
-						<li><a href="{{ url_for('start') }}" class="button alt">Get Started</a></li>
-					</ul>
-				</div>
-			</section>
+	<div style="min-height: 500px; background-image: url('static/images/bootstrap/classroom01.jpg'); background-size: cover;">
+	<section class="jumbotron"  style="margin-bottom: 0px; min-height: 500px; color: black !important; background-color: rgba(255, 255, 255, 0.6);">
+        <div class="container" style="margin-top: 100px;">
+          <h1 class="jumbotron-heading">Assignment Analysis</h1>
+          <p class="lead ">Get a greater understanding of how your students program</p>
+          <p>
+            <a href="upload_file" class="btn btn-primary my-2">I'm a student</a>
+            <a href="upload_file_many" class="btn btn-secondary my-2">I'm an instructor</a>
+          </p>
+        </div>
+	  </section>
+	</div>
 
-		<!-- One -->
-			<section id="one">
-				<div class="inner">
-					<header>
-						<h2>Introduction</h2>
-					</header>
-					<p> An instructor needs ways to evaluate students when teaching new programming skills. A student’s progress throughout a class must be recorded so the teacher knows where the student needs to improve and how to improve instruction material. Currently, assignments are static when handed in; they do not indicate how a student got to their end resulting product. If students' progress on an assignment can be recorded and analyzed, formative feedback can be provided to students and instructors. This would not make sense to implement manually as it would take too much time of the teaching staff. To combat this issue, this software can help the teaching staff provide a better experience for the students.</p>
-					<ul class="actions">
-						<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
-					</ul>
-				</div>
-			</section>
+	<section class="jumbotron" style="margin-top: 0px;">
+		<div class="container">
+			<h1 class="jumbotron-heading">Why use PAPI?</h1>
+			<p class="lead">An instructor needs ways to evaluate students when teaching new programming skills. A student’s progress throughout a class must be recorded so the teacher knows where the student needs to improve and how to improve instruction material. Currently, assignments are static when handed in; they do not indicate how a student got to their end resulting product. If students' progress on an assignment can be recorded and analyzed, formative feedback can be provided to students and instructors. This would not make sense to implement manually as it would take too much time of the teaching staff. To combat this issue, this software can help the teaching staff provide a better experience for the students.</p>
+		</div>
+	</section>
 
-		<!-- Two -->
-			<section id="two">
-				<div class="inner">
-					<article>
-						<div class="content">
-							<header>
-								<h3>Student Mode</h3>
-							</header>
-							<div class="image lit">
-								<img src="../static/images/code-1243504-1280x960.jpg" alt="" />
-							</div>
-							<p>Analyze student work at a per student basis. Requires the upload of a single database. Select the assignments to be looked over.</p>
-							<a href="{{ url_for('upload_file') }}" class="button alt">Start</a>
-						</div>
-					</article>
-					<article class="alt">
-						<div class="content">
-							<header>
-								<h3>Class Mode</h3>
-							</header>
-							<div class="image lit">
-								<img src="../static/images/lots-of-files-2-1236472-1280x960.jpg" alt="" />
-							</div>
-							<p>Upload many student databases at once to analyze the overall trend of a class over time. All assignments are automatically selected. Date range choices can be applied.</p>
-							<a href="{{ url_for('upload_files') }}" class="button alt">Start</a>
-						</div>
-					</article>
-				</div>
-			</section>
+	<div class="container" style="margin-bottom: 150px;">
+		<div class="row">
+			<div class="col-lg-4">
+				<i class="material-icons">face</i>
+				
+				<h4>Understand the Students Process</h4>
+				<p>By analyzing how and when a student is programming, advice can be provided to the student no matter their skill level.</p>
 
-		<!-- Three -->
-			<section id="three">
-				<div class="inner">
-					<article>
-						<div class="content">
-							<span class="icon fa-laptop"></span>
-							<header>
-								<h3>Understand the Students Process</h3>
-							</header>
-							<ul class="actions">
-								<p>By analyzing how and when a student is programming, advice can be provided to the student no matter their skill level.</p>
-								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
-							</ul>
-						</div>
-					</article>
-					<article>
-						<div class="content">
-							<span class="icon fa-diamond"></span>
-							<header>
-								<h3>Check for Large Text Insertions</h3>
-							</header>
-							<p>Nip the issue in the bud and get alerted to copy and pasting code. This is not a good practice when programming, especially when learning a new concept.</p>
-							<ul class="actions">
-								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
-							</ul>
-						</div>
-					</article>
-					<article>
-					<div class="content">
-							<span class="icon fa-laptop"></span>
-							<header>
-								<h3>Find Class Trends</h3>
-							</header>
-							<p>Discover when students begin and end an assignment to stress working early and often.</p>
-							<ul class="actions">
-								<li><a href="{{ url_for('learn_more') }}" class="button alt">Learn More</a></li>
-							</ul>
-						</div>
-					</article>
-				</div>
-			</section>
+			</div>
+			<div class="col-lg-4">
+				
+				<i class="material-icons">content_paste</i>
 
-		<!-- Footer -->
-			<section id="footer">
-				<div class="inner">
-					<div class="copyright">
-						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
-					</div>
-				</div>
-			</section>
+				<h4>Check for large text insertions</h4>
+				<p>Nip the issue in the bud and get alerted to copy and pasting code. This is not a good practice when programming, especially when learning a new concept.</p>
 
-		<!-- Scripts -->
-			<script src="../static/assets/js/jquery.min.js"></script>
-			<script src="../static/assets/js/skel.min.js"></script>
-			<script src="../static/assets/js/util.js"></script>
-			<script src="../static/assets/js/main.js"></script>
+			</div>
+			<div class="col-lg-4">
 
-	</body>
+				<i class="material-icons">timeline</i>
+
+				<h4>Discover <wbr /> Class Trends</h4>
+				<p>Determine when students begin and end an assignment to stress working early and often..</p>
+
+			</div>
+		</div>
+	</div>
+
+	<footer class="container py-5">
+		<div class="row">
+		  <div class="col-12 col-md">
+			  
+			<h5>Automated Detailed <br />Programming Assignment Feedback</h5>
+			<p class="text-muted">Computer Science Department<br />The University of Rhode Island</p>
+			<small class="d-block mb-3 text-muted">&copy; 2020 PAPI by Daniel Gauthier</small>
+		  </div>
+		  <div class="col-12 col-md text-right">
+			<h5>About PAPI</h5>
+			<ul class="list-unstyled text-small">
+			  <li><a class="text-muted" href="mailto:Daniel_Gauthier@uri.edu">Contact Us</a></li>
+			  <li><a class="text-muted" href="/learn_more">Learn More</a></li>
+			  <li><a class="text-muted" href="https://github.com/DanielGauthier8/PAPI">Contribute</a></li>
+			</ul>
+		  </div>
+		</div>
+	  </footer>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>

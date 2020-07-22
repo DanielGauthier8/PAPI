@@ -1,9 +1,4 @@
 <!DOCTYPE HTML>
-<!--
-	Introspect by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
 <html>
 	<head>
 		<title>Student Analysis</title>
@@ -15,27 +10,39 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script> -->
+		<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+		<style>
+		.logo {
+			font-family: 'Pacifico', cursive;
+			font-size: 50pt !important;
+			color: #6582b1 !important;
+			padding-bottom: 25px !important;
+			text-align: center;
+		}
+		</style>
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
 		<script src="../static/assets/js/heatmap.js"></script>
+
+
 	</head>
 	<body data-spy="scroll" data-target="#list-example">
 
+		<nav class="navbar navbar-light bg-light">
+			<div class="container">
+				<a class="navbar-brand" href="/../../">
+					PAPI
+				</a>
+			</div>
+		</nav>
+
+		<br />
 
 
 		<div class="container">
 
-			<nav class="navbar navbar-light bg-light">
-				<a class="navbar-brand" href="/../../">
-				  PAPI
-				</a>
-			  </nav>
-
-			  <br />
-
-
 			<div class="row">
-				<div class="col-md-3">
+				<div class="col-3 md d-none d-lg-block">
 
 					<style>
 						.list-group-item {
@@ -49,9 +56,9 @@
 
 					<div class="nav-container">
 						<!-- PAPI Name or logo -->
-						<h2>PAPI</h2>
+						<h2 class="logo">papi</h2>
 						<!-- Sample Tagline  -->
-						<p>Learn about learning. </p>
+						<p class="text-center">Learn about learning. </p>
 						<div id="list-example" class="list-group" style="min-width: 250px;">
 							<a class="list-group-item list-group-item-action" href="#list-item-1">Overview</a>
 							<a class="list-group-item list-group-item-action" href="#list-item-2">MOSS</a>
@@ -63,11 +70,6 @@
 						<br />
 						<br />
 
-						<div id="" class="" style="min-width: 250px;">
-							<!-- TODO: Fill in hyperlink -->
-							<a class="list-group-item list-group-item-action" href="#">Download PDF Report</a>
-						</div>
-
 					</div>
 
 
@@ -78,12 +80,12 @@
 					<section id="list-item-1" class="major special">
 						<div class="content">
                      		<h2>File Data</h2>
-							<table>
+							<table class="table">
                                     {% for key, value in file_dat.items() %}
 								<tr>
 									{% if key != "Large Text Insertion Detection*"%}
 									<th> {{ key }}</th>
-									<td> {{ value }}</td>
+									<td class="data-cell"> {{ value }}</td>
 									{% endif %}
 									{% if key == "Large Text Insertion Detection*" and value == -1 %}
 									<th> Large Text Insertion Detection*</th>
@@ -98,11 +100,11 @@
 					<section id="list-item-2" class="major special">
 						<div class="content">
 							<h2>Large Text Insertion(s)</h2>
-							<table>
+							<table class="table table-responsive-lg">
 								{% for key, value in file_dat["Large Text Insertion Detection*"].items() %}
 								<tr>
 									<th> {{ key }}</th>
-									<td><p> {{ value }}</p></td>
+									<td class="data-cell"><pre> {{ value }}</pre></td>
 								<tr>
 									{% endfor %}
 							</table>
@@ -110,17 +112,13 @@
 					</section>
 					{% endif %}
 
-
-					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
-
-				
 					{% if deletion_insertion_timeline != -1 %}
 					<section id="list-item-3" class="major speical">
 
 						<div class="content">
-							<h2>File Trends</h2>
+							<!-- <h2>File Trends</h2> -->
 							<h3>Heatmap</h3>
-							<table id="heatmap">
+							<table id="heatmap" class="table">
 								<tr>
 									<td><b>Date</b></td>
 									<td><b>12am - 8am</b></td>
@@ -135,8 +133,23 @@
 
 							...JSON.parse(`{{ deletion_insertion_timeline|safe }}`)
 							
-							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
-							;</script>
+							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}');
+							
+							// Hide long cells 
+							$(".data-cell").each((idx, el) => {
+								if($(el).text().length > 100){
+									let preview = $(el).text().substr(0, 99);
+									let full = $(el).text();
+
+									$(el).html(preview + " <i class=\"text-muted\" onclick=\"showAllText(this)\" data-full=\"" + full + "\">...(" + (full.length - 100) + " characters)</i>");
+								}
+							})
+
+							const showAllText = (element) => {
+								$(element).parent().html($(element).attr("data-full"))
+							}
+							
+						</script>
 					</section>
 					{% endif %}
 

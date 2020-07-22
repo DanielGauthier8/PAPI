@@ -1,9 +1,4 @@
 <!DOCTYPE HTML>
-<!--
-	Introspect by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
 <html>
 	<head>
 		<title>Student Analysis</title>
@@ -47,7 +42,7 @@
 		<div class="container">
 
 			<div class="row">
-				<div class="col-md-3">
+				<div class="col-3 md d-none d-lg-block">
 
 					<style>
 						.list-group-item {
@@ -75,11 +70,6 @@
 						<br />
 						<br />
 
-						<div id="" class="" style="min-width: 250px;">
-							<!-- TODO: Fill in hyperlink -->
-							<a class="list-group-item list-group-item-action" href="#">Download PDF Report</a>
-						</div>
-
 					</div>
 
 
@@ -90,12 +80,12 @@
 					<section id="list-item-1" class="major special">
 						<div class="content">
                      		<h2>File Data</h2>
-							<table>
+							<table class="table">
                                     {% for key, value in file_dat.items() %}
 								<tr>
 									{% if key != "Large Text Insertion Detection*"%}
 									<th> {{ key }}</th>
-									<td> {{ value }}</td>
+									<td class="data-cell"> {{ value }}</td>
 									{% endif %}
 									{% if key == "Large Text Insertion Detection*" and value == -1 %}
 									<th> Large Text Insertion Detection*</th>
@@ -110,11 +100,11 @@
 					<section id="list-item-2" class="major special">
 						<div class="content">
 							<h2>Large Text Insertion(s)</h2>
-							<table>
+							<table class="table table-responsive-lg">
 								{% for key, value in file_dat["Large Text Insertion Detection*"].items() %}
 								<tr>
 									<th> {{ key }}</th>
-									<td><p> {{ value }}</p></td>
+									<td class="data-cell"><pre> {{ value }}</pre></td>
 								<tr>
 									{% endfor %}
 							</table>
@@ -122,17 +112,13 @@
 					</section>
 					{% endif %}
 
-
-					<script>var t = `{{ deletion_insertion_timeline|safe }}`</script>
-
-				
 					{% if deletion_insertion_timeline != -1 %}
 					<section id="list-item-3" class="major speical">
 
 						<div class="content">
-							<h2>File Trends</h2>
+							<!-- <h2>File Trends</h2> -->
 							<h3>Heatmap</h3>
-							<table id="heatmap">
+							<table id="heatmap" class="table">
 								<tr>
 									<td><b>Date</b></td>
 									<td><b>12am - 8am</b></td>
@@ -147,8 +133,23 @@
 
 							...JSON.parse(`{{ deletion_insertion_timeline|safe }}`)
 							
-							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}')
-							;</script>
+							], '{{ file_dat["Number of Insertion Chunks*"] }}', '{{ file_dat["Number of Deletion Chunks*"] }}');
+							
+							// Hide long cells 
+							$(".data-cell").each((idx, el) => {
+								if($(el).text().length > 100){
+									let preview = $(el).text().substr(0, 99);
+									let full = $(el).text();
+
+									$(el).html(preview + " <i class=\"text-muted\" onclick=\"showAllText(this)\" data-full=\"" + full + "\">...(" + (full.length - 100) + " characters)</i>");
+								}
+							})
+
+							const showAllText = (element) => {
+								$(element).parent().html($(element).attr("data-full"))
+							}
+							
+						</script>
 					</section>
 					{% endif %}
 

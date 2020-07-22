@@ -9,87 +9,50 @@
 		<title>Student Analysis</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<link rel="stylesheet" href="../static/assets/css/main.css" />
 
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
-		<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-		<style>
-		.logo {
-			font-family: 'Pacifico', cursive;
-			font-size: 50pt !important;
-			color: #6582b1 !important;
-			padding-bottom: 25px !important;
-			text-align: center;
-		}
-		</style>
-
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js" integrity="sha256-5oApc/wMda1ntIEK4qoWJ4YItnV4fBHMwywunj8gPqc=" crossorigin="anonymous"></script>
 		<script src="../static/assets/js/heatmap.js"></script>
 	</head>
-	<body data-spy="scroll" data-target="#list-example">
+	<body>
 
-		<nav class="navbar navbar-light bg-light">
-			<div class="container">
-				<a class="navbar-brand" href="/../../">
-					PAPI
-				</a>
-			</div>
-		</nav>
-
-		<br />
-
-
-		<div class="container">
-
-			<div class="row">
-				<div class="col-3 md d-none d-lg-block">
-
-					<style>
-						.list-group-item {
-							padding-right: 20px;
-						}
-						.nav-container {
-							position: fixed; 
-						}
-
-					</style>
-
-					<div class="nav-container">
-						<!-- PAPI Name or logo -->
-						<h2 class="logo">papi</h2>
-						<!-- Sample Tagline  -->
-						<p class="text-center">Learn about learning. </p>
-						<div id="list-example" class="list-group" style="min-width: 250px;">
-							<a class="list-group-item list-group-item-action" href="#list-item-1">Overview</a>
-							<a class="list-group-item list-group-item-action" href="#list-item-3">Heapmap</a>
-							<a class="list-group-item list-group-item-action" href="#list-item-4">File Activity</a>
-						</div>
-
-
-						<br />
-						<br />
-
-						<div id="" class="" style="min-width: 250px;">
-							<!-- TODO: Fill in hyperlink -->
-							<a class="list-group-item list-group-item-action" href={{zip_path}} download>Download PDF Report</a>
-						</div>
-
-					</div>
-
+		<!-- Header -->
+			<header id="header">
+				<div class="inner">
+					<a href="{{ url_for('index') }}" class="logo">papi</a>
+					<nav id="nav">
+						<a href="{{ url_for('index') }}">Home</a>
+						<a href="{{ url_for('start') }}">Start</a>
+						<a href="{{ url_for('upload_file') }}">Student Mode</a>
+						<a href="{{ url_for('upload_files') }}"><strong>Class Mode</strong></a>
+						<a href="{{ url_for('learn_more') }}">Learn More</a>
+					</nav>
 				</div>
-				<div class="col-md-9">
+			</header>
 
-						<div class="content"  id="list-item-1">
+			<a href="#menu" class="navPanelToggle"><span class="fa fa-bars"></span></a>
+<!-- Main -->
+			<section id="main">
+				<div class="inner">
+
+				<!-- One -->
+					<section id="one" class="major special">
+						<div class="content" style="text-align: center">
+							<h1>Class File Activity Analysis</h1>
+							<a href={{zip_path}} download class="button">Export Feedback</a>
+
+						</div>
+					</section>
+					<section id="two" class="major special">
+						<div class="content" style="text-align: center">
                      		<h2>Class Summary</h2>
-							<table class="table">
+							<table>
                                     {% for key, value in file_dat.items() %}
 								<tr>
 									{% if key != "Large Text Insertion Detection*"%}
-									<th> {{ key }} </th>
-									<td class="data-cell"> {{ value }} </td>
+									<th> {{ key }}</th>
+									<td> {{ value }}</td>
 									{% endif %}
 									{% if key == "Large Text Insertion Detection*" and value == -1 %}
 									<th> Large Text Insertion Detection*</th>
@@ -99,13 +62,18 @@
 								{% endfor %}
 							</table>
 						</div>
+					</section>
 
-						<div id="list-item-3" class="content">
-							<div>
+					<!-- <section id="two" class="major special"> -->
+
+					<section id="five" class="major special">
+						<div class="content" style="text-align: center">
+							<h2>File Trends</h2>
+					<section id="four" class="major speical">
 						<h3>Heatmap</h3>
 						<p>Get insights into when your students are working the most</p>
-
-							<table id="heatmap" class="table">
+						<div>
+							<table id="heatmap">
 								<tr>
 									<td><b>Date</b></td>
 									<td><b>12am - 8am</b></td>
@@ -116,15 +84,13 @@
 
 							</table>
 						</div>
-						</div>
 						<script>displayHeatMap([
 
 							...JSON.parse(`{{ heatmaps|safe }}`)
 							
 							])
 							;</script>
-
-							<div  id="list-item-4">
+					</section>
 						<h3>Activity by Type</h3>
 							<form method="post" action="#">
 								<table>
@@ -152,15 +118,33 @@
 								</table>
 							</form>
 							<canvas id="myLine" width="100%"></canvas>
+
+						<br>
+						<a href={{zip_path}} download class="button alt">Export Feedback</a>
 						</div>
+					</section>
 
-					
-			
+					<hr/>
+				</div>
+			</section>
 
+		<!-- Footer -->
+			<section id="footer">
+				<div class="inner">
+					<header>
+					</header>
 
+					<div class="copyright">
+						PAPI 2020 &copy; Template: TEMPLATED. Images: Unsplash, FREEIMAGES
+					</div>
+				</div>
+			</section>
 
-			</div></div></div>
-
+		<!-- Scripts -->
+			<script src="../static/assets/js/jquery.min.js"></script>
+			<script src="../static/assets/js/skel.min.js"></script>
+			<script src="../static/assets/js/util.js"></script>
+			<script src="../static/assets/js/main.js"></script>
 			<script src="../static/assets/js/Chart.min.js"></script>
 			<script src="../static/assets/js/moment.min.js"></script>
 

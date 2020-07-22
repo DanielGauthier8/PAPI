@@ -154,17 +154,12 @@ def file_analysis(token):
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
 
     if request.method == 'POST':
-        if request.form['skip_check'] is "no":
-            skip_empty = False
-        else:
-            skip_empty = True
-
         file_dat, graphs, the_timeline, deletion_insertion_timeline = db_actions. \
             all_data(os.path.join(app.config['UPLOAD_FOLDER'], token), session[token], request.args.get('start'), request.args.get('end'))
 
         user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
                                                                                  request.form['granularity'],
-                                                                                 skip_empty)
+                                                                                 False)
 
         return render_template('file_analysis.html', file_dat=file_dat, graphs=graphs, the_timeline=the_timeline,
                                deletion_insertion_timeline=deletion_insertion_timeline, user_selection=user_selection)
@@ -182,17 +177,13 @@ def file_analysis_many(token):
         multiple_database_get_data(session[token], request.args.get('start'), request.args.get('end'))
     user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs, "hour", True)
     if request.method == 'POST':
-        if request.form['skip_check'] is "no":
-            skip_empty = False
-        else:
-            skip_empty = True
 
         graphs, the_timeline, deletion_insertion_timeline, heatmaps, file_dat = db_actions. \
             multiple_database_get_data(session[token])
 
         user_selection, the_timeline, graphs = db_actions.time_graph_granularity(the_timeline, graphs,
                                                                                  request.form['granularity'],
-                                                                                 skip_empty)
+                                                                                 False)
 
         return render_template('file_analysis_many.html', graphs=graphs, the_timeline=the_timeline,
                                deletion_insertion_timeline=deletion_insertion_timeline,

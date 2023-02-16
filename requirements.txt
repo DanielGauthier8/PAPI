@@ -1,5 +1,5 @@
 flask==1.1.2
-werkzeug==1.0.1
+werkzeug==2.2.3
 flask-uploads
 flask-dropzone
 fpdf
